@@ -10,6 +10,7 @@ pub struct StatusRegister {
 }
 
 impl StatusRegister {
+    #![allow(unused)]
     pub fn new() -> StatusRegister {
         StatusRegister {
             negative: false,
@@ -21,5 +22,16 @@ impl StatusRegister {
             zero: false,
             carry: false,
         }
+    }
+
+    pub fn status(&self) {
+        println!("N: {}", self.negative);
+        println!("V: {}", self.overflow);
+        println!("I: {}", self.ignored);
+        println!("B: {}", self.brk);
+        println!("D: {}", self.decimal);
+        println!("I: {}", self.interrupt);
+        println!("Z: {}", self.zero);
+        println!("C: {}", self.carry);
     }
 }
