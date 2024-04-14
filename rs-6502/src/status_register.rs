@@ -34,4 +34,17 @@ impl StatusRegister {
         println!("Z: {}", self.zero);
         println!("C: {}", self.carry);
     }
+
+    pub fn get_status_byte(&self) -> u8 {
+        let negative = (self.negative as u8) << 7;
+        let overflow = (self.overflow as u8) << 6;
+        let ignored = (self.ignored as u8) << 5;
+        let brk = (self.brk as u8) << 4;
+        let decimal = (self.decimal as u8) << 3;
+        let interrupt = (self.interrupt as u8) << 2;
+        let zero = (self.zero as u8) << 1;
+        let carry = self.carry as u8;
+
+        negative | overflow | ignored | brk | decimal | interrupt | zero | carry
+    }
 }

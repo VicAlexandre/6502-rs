@@ -25,7 +25,7 @@ impl Cpu {
     }
 
     
-    pub fn fetch_instruction(&mut self) -> u8 {
+    pub fn fetch(&mut self) -> u8 {
         let instruction = self.memory.read_u8(self.pc);
         self.pc += 1;
         instruction
@@ -38,5 +38,25 @@ impl Cpu {
         println!("PC: {:#06X}", self.pc);
         self.sr.status();
         println!("SP: {:#04X}", self.stack.sp);
+    }
+
+    pub fn execute(&mut self) -> u8 {
+        let instruction = self.fetch();
+        let mut cycles: u8;
+
+        match instruction {
+            0x00 => {
+                self.stack.push_u16(self.pc);
+                self.stack.push_u8(self.sr.get_status_byte());
+                self.pc = self.memory.read_u16(0xFFFE);
+                self.sr.brk = true;
+                cycles = 7;
+            }
+            _ => {
+                panic!("Instruction not implemented: {:#04X}", instruction);
+            }
+        }
+
+        cycles
     }
 }
