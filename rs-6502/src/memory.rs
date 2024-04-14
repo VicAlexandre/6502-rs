@@ -10,7 +10,7 @@ impl fmt::Display for Memory {
         for i in self.ram.iter() {
             result.push(*i as char);
         }
-        write!(f, "{}", result)
+        write!(f, "{}\n", result)
     }
 }
 

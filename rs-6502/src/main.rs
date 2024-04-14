@@ -12,6 +12,7 @@ fn main() {
     println!("# RS-6502 Emulator #");
 
     let mut cpu = Cpu::new();
+    let mut cycles: u32 = 0;
 
     if env::args().len() < 2 {
         println!("Usage: cargo run <path-to-rom>");
@@ -23,4 +24,14 @@ fn main() {
 
     cpu.memory.load(rom);
     print!("{}", cpu.memory);
+
+    loop {
+        cycles += cpu.execute() as u32;
+        println!("Cycles: {}", cycles);
+        cpu.status();
+        // wait for a key press
+
+        println!("Press Enter to continue...");
+        std::io::stdin().read_line(&mut String::new()).unwrap();
+    }
 }

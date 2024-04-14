@@ -32,12 +32,12 @@ impl Cpu {
     }
 
     pub fn status(&self) {
-        println!("A: {:#04X}", self.a);
-        println!("X: {:#04X}", self.x);
-        println!("Y: {:#04X}", self.y);
-        println!("PC: {:#06X}", self.pc);
+        print!("A: {:#04X}\t", self.a);
+        print!("X: {:#04X}\t", self.x);
+        print!("Y: {:#04X}\t", self.y);
+        print!("PC: {:#06X}\t", self.pc);
+        print!("SP: {:#04X}\n", self.stack.sp);
         self.sr.status();
-        println!("SP: {:#04X}", self.stack.sp);
     }
 
     pub fn execute(&mut self) -> u8 {
@@ -50,7 +50,16 @@ impl Cpu {
                 self.stack.push_u8(self.sr.get_status_byte());
                 self.pc = self.memory.read_u16(0xFFFE);
                 self.sr.brk = true;
+
                 cycles = 7;
+            }
+            0xA2 => {
+                let data = self.fetch();
+                self.x = data;
+                self.sr.zero = self.x == 0;
+                self.sr.negative = self.x & 0b10000000 != 0;
+
+                cycles = 2;
             }
             _ => {
                 panic!("Instruction not implemented: {:#04X}", instruction);
