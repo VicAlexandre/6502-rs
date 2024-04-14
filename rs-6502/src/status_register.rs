@@ -41,7 +41,7 @@ impl StatusRegister {
         let zero = (self.zero as u8) << 1;
         let carry = self.carry as u8;
 
-        // 0bNOBDIZC0
+        // 0bNO0BDIZC
         negative | overflow | brk | decimal | interrupt | zero | carry
     }
 }
