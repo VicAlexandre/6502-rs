@@ -44,4 +44,14 @@ impl StatusRegister {
         // 0bNO0BDIZC
         negative | overflow | brk | decimal | interrupt | zero | carry
     }
+
+    pub fn set_status_byte(&mut self, status_byte: u8) {
+        self.negative = (status_byte & 0b10000000) != 0;
+        self.overflow = (status_byte & 0b01000000) != 0;
+        self.brk = (status_byte & 0b00010000) != 0;
+        self.decimal = (status_byte & 0b00001000) != 0;
+        self.interrupt_disable = (status_byte & 0b00000100) != 0;
+        self.zero = (status_byte & 0b00000010) != 0;
+        self.carry = (status_byte & 0b00000001) != 0;
+    }
 }
