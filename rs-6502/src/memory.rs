@@ -1,7 +1,7 @@
 use std::fmt;
 
 pub struct Memory {
-    pub ram: [u8; 0x10000], // 64KB
+    ram: [u8; 0x10000], // 64KB
 }
 
 impl fmt::Display for Memory {
@@ -17,9 +17,7 @@ impl fmt::Display for Memory {
 impl Memory {
     #![allow(unused)]
     pub fn new() -> Memory {
-        Memory {
-            ram: [0; 0x10000],
-        }
+        Memory { ram: [0; 0x10000] }
     }
 
     pub fn read_u8(&self, addr: u16) -> u8 {
