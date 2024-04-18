@@ -13,7 +13,6 @@ pub struct Cpu {
 }
 
 impl Cpu {
-    #![allow(unused)]
     pub fn new() -> Cpu {
         Cpu {
             a: 0,
@@ -49,7 +48,6 @@ impl Cpu {
 
     pub fn execute(&mut self) -> u8 {
         let instruction = self.fetch_u8();
-        let cycles: u8;
 
         match instruction {
             //BRK
@@ -85,7 +83,7 @@ impl Cpu {
             // LDA (ind), y
             0xB1 => self.lda_ind_y(),
             // LDX immediate
-            0xA2 => self.lda_immediate(),
+            0xA2 => self.ldx_immediate(),
             // LDX zpg
             0xA6 => self.ldx_zpg(),
             // LDX zpg, y
@@ -126,6 +124,8 @@ impl Cpu {
             0x1D => self.ora_abs_x(),
             // ORA (indirect, x)
             0x01 => self.ora_indirect_x(),
+            // ORA (indirect), y
+            0x11 => self.ora_indirect_y(),
             // PHA
             0x48 => self.push_accumulator(),
             // PHP
@@ -145,7 +145,7 @@ impl Cpu {
             // ROL abs, x
             0x3E => self.rol_abs_x(),
             // ASL accumulator
-            0xA0 => self.asl_acc(),
+            0x0A => self.asl_acc(),
             // ASL zpg
             0x06 => self.asl_zpg(),
             // ASL zpg, X
@@ -211,7 +211,7 @@ impl Cpu {
         let data = self.fetch_u8();
 
         self.a = data;
-        self.sr.zero = (self.a == 0);
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         2
@@ -222,7 +222,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr as u16);
 
         self.a = data;
-        self.sr.zero = (self.a == 0);
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         3
@@ -233,7 +233,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr);
 
         self.a = data;
-        self.sr.zero = (self.a == 0);
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         3
@@ -244,7 +244,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr);
 
         self.a = data;
-        self.sr.zero = (self.a == 0);
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         4
@@ -255,7 +255,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr);
 
         self.a = data;
-        self.sr.zero = (self.a == 0);
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         4 as u8 + (data_addr > 0x00FF) as u8
@@ -266,7 +266,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr);
 
         self.a = data;
-        self.sr.zero = (self.a == 0);
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         4 as u8 + (data_addr > 0x00FF) as u8
@@ -278,7 +278,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr);
 
         self.a = data;
-        self.sr.zero = (self.a == 0);
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         6
@@ -290,7 +290,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr);
 
         self.a = data;
-        self.sr.zero = (self.a == 0);
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         5 as u8 + (data_addr > 0x00FF) as u8
@@ -300,7 +300,7 @@ impl Cpu {
         let data = self.fetch_u8();
 
         self.x = data;
-        self.sr.zero = (self.x == 0);
+        self.sr.zero = self.x == 0;
         self.sr.negative = (self.x & MASK_MSB) != 0;
 
         2
@@ -311,7 +311,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr);
 
         self.x = data;
-        self.sr.zero = (self.x == 0);
+        self.sr.zero = self.x == 0;
         self.sr.negative = (self.x & MASK_MSB) != 0;
 
         3
@@ -322,7 +322,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr);
 
         self.x = data;
-        self.sr.zero = (self.x == 0);
+        self.sr.zero = self.x == 0;
         self.sr.negative = (self.x & MASK_MSB) != 0;
 
         4
@@ -333,7 +333,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr);
 
         self.x = data;
-        self.sr.zero = (self.x == 0);
+        self.sr.zero = self.x == 0;
         self.sr.negative = (self.x & MASK_MSB) != 0;
 
         4
@@ -344,7 +344,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr);
 
         self.x = data;
-        self.sr.zero = (self.x == 0);
+        self.sr.zero = self.x == 0;
         self.sr.negative = (self.x & MASK_MSB) != 0;
 
         4 as u8 + (data_addr > 0x00FF) as u8
@@ -354,7 +354,7 @@ impl Cpu {
         let data = self.fetch_u8();
 
         self.y = data;
-        self.sr.zero = (self.y == 0);
+        self.sr.zero = self.y == 0;
         self.sr.negative = (self.y & MASK_MSB) != 0;
 
         2
@@ -365,7 +365,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr);
 
         self.y = data;
-        self.sr.zero = (self.y == 0);
+        self.sr.zero = self.y == 0;
         self.sr.negative = (self.y & MASK_MSB) != 0;
 
         3
@@ -376,7 +376,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr);
 
         self.y = data;
-        self.sr.zero = (self.y == 0);
+        self.sr.zero = self.y == 0;
         self.sr.negative = (self.y & MASK_MSB) != 0;
 
         4
@@ -387,7 +387,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr);
 
         self.y = data;
-        self.sr.zero = (self.y == 0);
+        self.sr.zero = self.y == 0;
         self.sr.negative = (self.y & MASK_MSB) != 0;
 
         4
@@ -398,7 +398,7 @@ impl Cpu {
         let data = self.memory.read_u8(data_addr);
 
         self.y = data;
-        self.sr.zero = (self.y == 0);
+        self.sr.zero = self.y == 0;
         self.sr.negative = (self.y & MASK_MSB) != 0;
 
         4 as u8 + (data_addr > 0x00FF) as u8
@@ -407,7 +407,7 @@ impl Cpu {
     fn lsr_accumulator(&mut self) -> u8 {
         self.sr.carry = (self.a & MASK_LSB) != 0;
         self.a = self.a >> 1;
-        self.sr.zero = (self.a == 0);
+        self.sr.zero = self.a == 0;
         self.sr.negative = false;
 
         2
@@ -423,7 +423,7 @@ impl Cpu {
 
         self.memory.write_u8(data_addr, data);
 
-        self.sr.zero = (data == 0);
+        self.sr.zero = data == 0;
         self.sr.negative = false;
 
         5
@@ -439,7 +439,7 @@ impl Cpu {
 
         self.memory.write_u8(data_addr, data);
 
-        self.sr.zero = (data == 0);
+        self.sr.zero = data == 0;
         self.sr.negative = false;
 
         6
@@ -455,7 +455,7 @@ impl Cpu {
 
         self.memory.write_u8(data_addr, data);
 
-        self.sr.zero = (data == 0);
+        self.sr.zero = data == 0;
         self.sr.negative = false;
 
         6
@@ -471,7 +471,7 @@ impl Cpu {
 
         self.memory.write_u8(data_addr, data);
 
-        self.sr.zero = (data == 0);
+        self.sr.zero = data == 0;
         self.sr.negative = false;
 
         7
@@ -480,8 +480,8 @@ impl Cpu {
     fn ora_immediate(&mut self) -> u8 {
         let data = self.fetch_u8();
 
-        self.a = (self.a | data);
-        self.sr.zero = (self.a == 0);
+        self.a = self.a | data;
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         2
@@ -491,8 +491,8 @@ impl Cpu {
         let data_addr = self.fetch_u8() as u16;
         let data = self.memory.read_u8(data_addr);
 
-        self.a = (self.a | data);
-        self.sr.zero = (self.a == 0);
+        self.a = self.a | data;
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         3
@@ -502,8 +502,8 @@ impl Cpu {
         let data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
         let data = self.memory.read_u8(data_addr);
 
-        self.a = (self.a | data);
-        self.sr.zero = (self.a == 0);
+        self.a = self.a | data;
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         4
@@ -513,8 +513,8 @@ impl Cpu {
         let data_addr = self.fetch_u16();
         let data = self.memory.read_u8(data_addr);
 
-        self.a = (self.a | data);
-        self.sr.zero = (self.a == 0);
+        self.a = self.a | data;
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         4
@@ -524,8 +524,8 @@ impl Cpu {
         let data_addr = self.fetch_u16() + self.x as u16;
         let data = self.memory.read_u8(data_addr);
 
-        self.a = (self.a | data);
-        self.sr.zero = (self.a == 0);
+        self.a = self.a | data;
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         4 as u8 + (data_addr > 0x00FF) as u8
@@ -536,8 +536,8 @@ impl Cpu {
         let data_addr = self.memory.read_u16(addr_addr);
         let data = self.memory.read_u8(data_addr);
 
-        self.a = (self.a | data);
-        self.sr.zero = (self.a == 0);
+        self.a = self.a | data;
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         6
@@ -548,8 +548,8 @@ impl Cpu {
         let data_addr = addr_addr + self.y as u16;
         let data = self.memory.read_u8(data_addr);
 
-        self.a = (self.a | data);
-        self.sr.zero = (self.a == 0);
+        self.a = self.a | data;
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         5 as u8 + (data_addr > 0xFF) as u8
@@ -571,7 +571,7 @@ impl Cpu {
     fn pull_accumulator(&mut self) -> u8 {
         let popped_acc = self.stack.pop_u8();
         self.a = popped_acc;
-        self.sr.zero = (popped_acc == 0);
+        self.sr.zero = popped_acc == 0;
         self.sr.negative = (popped_acc & MASK_MSB) != 0;
 
         4
@@ -588,7 +588,7 @@ impl Cpu {
         let old_carry = self.sr.carry as u8;
         self.sr.carry = (self.a & MASK_MSB) != 0;
         self.a = (self.a << 1) | old_carry;
-        self.sr.zero = (self.a == 0);
+        self.sr.zero = self.a == 0;
 
         2
     }
@@ -602,7 +602,7 @@ impl Cpu {
 
         data = (data << 1) | old_carry;
 
-        self.sr.zero = (data == 0);
+        self.sr.zero = data == 0;
         self.sr.negative = (data & MASK_MSB) != 0;
         
         self.memory.write_u8(data_addr, data);
@@ -619,7 +619,7 @@ impl Cpu {
 
         data = (data << 1) | old_carry;
 
-        self.sr.zero = (data == 0);
+        self.sr.zero = data == 0;
         self.sr.negative = (data & MASK_MSB) != 0;
 
         self.memory.write_u8(data_addr, data);
@@ -636,7 +636,7 @@ impl Cpu {
         
         data = (data << 1) | old_carry;
         
-        self.sr.zero = (data == 0);
+        self.sr.zero = data == 0;
         self.sr.negative = (data & MASK_MSB) != 0;
 
         self.memory.write_u8(data_addr, data);
@@ -653,7 +653,7 @@ impl Cpu {
         
         data = (data << 1) | old_carry;
 
-        self.sr.zero = (data == 0);
+        self.sr.zero = data == 0;
         self.sr.negative = (data & MASK_MSB) != 0;
 
         self.memory.write_u8(data_addr, data);
@@ -662,13 +662,13 @@ impl Cpu {
     }
 
     fn asl_acc(&mut self) -> u8 {
-        let mut old_byte = self.a;
+        let old_byte = self.a;
 
-        self.sr.carry = ((old_byte & MASK_MSB) != 0);
+        self.sr.carry = (old_byte & MASK_MSB) != 0;
         
         self.a = self.a << 1;
         
-        self.sr.zero = (self.a == 0);
+        self.sr.zero = self.a == 0;
         self.sr.negative = (self.a & MASK_MSB) != 0;
 
         2
@@ -678,11 +678,11 @@ impl Cpu {
         let data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
         let mut data = self.memory.read_u8(data_addr);
 
-        self.sr.carry = ((data & MASK_MSB) != 0);
+        self.sr.carry = (data & MASK_MSB) != 0;
         
         data = data << 1;
         
-        self.sr.zero = (data == 0);
+        self.sr.zero = data == 0;
         self.sr.negative = (data & MASK_MSB) != 0;
 
         self.memory.write_u8(data_addr, data);
@@ -694,11 +694,11 @@ impl Cpu {
         let data_addr = self.fetch_u8() as u16;
         let mut data = self.memory.read_u8(data_addr);
 
-        self.sr.carry = ((data & MASK_MSB) != 0);
+        self.sr.carry = (data & MASK_MSB) != 0;
         
         data = data << 1;
         
-        self.sr.zero = (data == 0);
+        self.sr.zero = data == 0;
         self.sr.negative = (data & MASK_MSB) != 0;
 
         self.memory.write_u8(data_addr, data);
@@ -710,11 +710,11 @@ impl Cpu {
         let data_addr = self.fetch_u16();
         let mut data = self.memory.read_u8(data_addr);
 
-        self.sr.carry = ((data & MASK_MSB) != 0);
+        self.sr.carry = (data & MASK_MSB) != 0;
         
         data = data << 1;
         
-        self.sr.zero = (data == 0);
+        self.sr.zero = data == 0;
         self.sr.negative = (data & MASK_MSB) != 0;
 
         self.memory.write_u8(data_addr, data);
@@ -726,11 +726,11 @@ impl Cpu {
         let data_addr = self.fetch_u16() + self.x as u16;
         let mut data = self.memory.read_u8(data_addr);
 
-        self.sr.carry = ((data & MASK_MSB) != 0);
+        self.sr.carry = (data & MASK_MSB) != 0;
         
         data = data << 1;
         
-        self.sr.zero = (data == 0);
+        self.sr.zero = data == 0;
         self.sr.negative = (data & MASK_MSB) != 0;
 
         self.memory.write_u8(data_addr, data);

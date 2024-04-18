@@ -1,5 +1,4 @@
 use crate::cpu::Cpu;
-// use std::fs;
 use std::env;
 
 mod cpu;
@@ -8,7 +7,6 @@ mod stack;
 mod status_register;
 
 fn main() {
-    #![allow(unused_variables)]
     println!("# RS-6502 Emulator #");
 
     let mut cpu = Cpu::new();
