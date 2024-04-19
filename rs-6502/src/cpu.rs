@@ -1,5 +1,5 @@
 use crate::{
-    addressing_mode::AddrMode, memory::Memory, stack::Stack, status_register::StatusRegister,
+    addressing_mode::{get_addr_mode, AddrMode}, memory::Memory, stack::Stack, status_register::StatusRegister,
 };
 
 const MASK_MSB: u8 = 0b10000000;
@@ -55,10 +55,10 @@ impl Cpu {
     }
 
     pub fn execute(&mut self) -> u8 {
-        let instruction = self.fetch_u8();
-        let addr_mode = AddrMode::AbsX;
+        let opcode = self.fetch_u8();
+        let addr_mode = get_addr_mode(opcode);
 
-        match instruction {
+        match opcode {
             //BRK
             0x00 => self.break_interrupt(),
             // CLC
@@ -133,7 +133,7 @@ impl Cpu {
             // ASL abs
             // ASL abs, X
             0x06 | 0x16 | 0x0E | 0x1E => self.asl(addr_mode),
-            _ => panic!("Instruction not implemented: {:#04X}", instruction),
+            _ => panic!("Instruction not implemented: {:#04X}", opcode),
         }
     }
 
