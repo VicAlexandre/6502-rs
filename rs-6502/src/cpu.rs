@@ -195,8 +195,8 @@ impl Cpu {
                 cycles = 2;
             }
             AddrMode::ZeroPage => {
-                let data_addr = self.fetch_u8();
-                data = self.memory.read_u8(data_addr as u16);
+                let data_addr = self.fetch_u8() as u16;
+                data = self.memory.read_u8(data_addr);
 
                 cycles = 3;
             }

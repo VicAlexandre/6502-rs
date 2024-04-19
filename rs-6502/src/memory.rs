@@ -15,7 +15,6 @@ impl fmt::Display for Memory {
 }
 
 impl Memory {
-    #![allow(unused)]
     pub fn new() -> Memory {
         Memory { ram: [0; 0x10000] }
     }
@@ -35,13 +34,13 @@ impl Memory {
         self.ram[addr as usize] = data;
     }
 
-    pub fn write_u16(&mut self, addr: u16, data: u16) {
-        // Little Endian implementation
-        let least_significant = data as u8;
-        let most_significant = (data >> 8) as u8;
-        self.ram[addr as usize] = least_significant;
-        self.ram[(addr + 1) as usize] = most_significant;
-    }
+    // pub fn write_u16(&mut self, addr: u16, data: u16) {
+    //     // Little Endian implementation
+    //     let least_significant = data as u8;
+    //     let most_significant = (data >> 8) as u8;
+    //     self.ram[addr as usize] = least_significant;
+    //     self.ram[(addr + 1) as usize] = most_significant;
+    // }
 
     pub fn load(&mut self, data: Vec<u8>) {
         for (i, byte) in data.iter().enumerate() {
