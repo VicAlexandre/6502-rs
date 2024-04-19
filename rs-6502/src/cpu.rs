@@ -47,6 +47,7 @@ impl Cpu {
         print!("PC: {:#06X}\t", self.pc);
         print!("SP: {:#04X}\n", self.stack.sp);
         self.sr.status();
+        println!("Next instruction opcode: {:#04X}", self.memory.read_u8(self.pc));
     }
 
     fn set_zero_and_negative_flags(&mut self, data: u8) {
@@ -138,7 +139,7 @@ impl Cpu {
     }
 
     fn break_interrupt(&mut self) -> u8 {
-        self.stack.push_u16(self.pc);
+        self.stack.push_u16(self.pc + 2);
         self.stack.push_u8(self.sr.get_status_byte());
 
         self.pc = self.memory.read_u16(0xFFFE);

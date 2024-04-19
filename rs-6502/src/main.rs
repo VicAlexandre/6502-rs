@@ -24,6 +24,9 @@ fn main() {
     cpu.memory.load(rom);
     print!("{}", cpu.memory);
 
+    cpu.status();
+    println!("Press Enter to continue...");
+    std::io::stdin().read_line(&mut String::new()).unwrap();
     loop {
         cycles += cpu.execute() as u32;
         println!("Cycles: {}", cycles);
