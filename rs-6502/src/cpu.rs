@@ -1,4 +1,6 @@
-use crate::{memory::Memory, stack::Stack, status_register::StatusRegister};
+use crate::{
+    addressing_mode::AddrMode, memory::Memory, stack::Stack, status_register::StatusRegister,
+};
 
 const MASK_MSB: u8 = 0b10000000;
 const MASK_LSB: u8 = 0b00000001;
@@ -54,6 +56,7 @@ impl Cpu {
 
     pub fn execute(&mut self) -> u8 {
         let instruction = self.fetch_u8();
+        let addr_mode = AddrMode::AbsX;
 
         match instruction {
             //BRK
@@ -73,65 +76,41 @@ impl Cpu {
             // INX
             0xE8 => self.inc_x(),
             // LDA immediate
-            0xA9 => self.lda_immediate(),
             // LDA zpg
-            0xA5 => self.lda_zpg(),
             // LDA zpg, X
-            0xB5 => self.lda_zpg_x(),
             // LDA abs
-            0xAD => self.lda_abs(),
             // LDA abs, X
-            0xBD => self.lda_abs_x(),
             // LDA abs, y
-            0xB9 => self.lda_abs_y(),
             // LDA (ind, x)
-            0xA1 => self.lda_ind_x(),
             // LDA (ind), y
-            0xB1 => self.lda_ind_y(),
+            0xA9 | 0xA5 | 0xB5 | 0xAD | 0xBD | 0xB9 | 0xA1 | 0xB1 => self.lda(addr_mode),
             // LDX immediate
-            0xA2 => self.ldx_immediate(),
             // LDX zpg
-            0xA6 => self.ldx_zpg(),
             // LDX zpg, y
-            0xB6 => self.ldx_zpg_y(),
             // LDX abs
-            0xAE => self.ldx_abs(),
             // LDX abs, y
-            0xBE => self.ldx_abs_y(),
+            0xA2 | 0xA6 | 0xB6 | 0xAE | 0xBE => self.ldx(addr_mode),
             // LDY immediate
-            0xA0 => self.ldy_immediate(),
             // LDY zpg
-            0xA4 => self.ldy_zpg(),
             // LDY zpg, x
-            0xB4 => self.ldy_zpg_x(),
             // LDY abs
-            0xAC => self.ldy_abs(),
             // LDY abs, x
-            0xBC => self.ldy_abs_x(),
+            0xA0 | 0xA4 | 0xB4 | 0xAC | 0xBC => self.ldy(addr_mode),
             // LSR accumulator
             0x4A => self.lsr_accumulator(),
             // LSR zpg
-            0x46 => self.lsr_zpg(),
             // LSR zpg, x
-            0x56 => self.lsr_zpg_x(),
             // LSR abs
-            0x4E => self.lsr_abs(),
             // LSR abs, x
-            0x5E => self.lsr_abs_x(),
+            0x46 | 0x56 | 0x4E | 0x5E => self.lsr(addr_mode),
             // ORA immediate
-            0x09 => self.ora_immediate(),
             // ORA zpg
-            0x05 => self.ora_zpg(),
-            // ORA zpg, x
-            0x15 => self.ora_zpg_x(),
             // ORA abs
-            0x0D => self.ora_abs(),
+            // ORA zpg, x
             // ORA abs, x
-            0x1D => self.ora_abs_x(),
             // ORA (indirect, x)
-            0x01 => self.ora_indirect_x(),
             // ORA (indirect), y
-            0x11 => self.ora_indirect_y(),
+            0x09 | 0x05 | 0x15 | 0x0D | 0x1D | 0x01 | 0x11 => self.ora(addr_mode),
             // PHA
             0x48 => self.push_accumulator(),
             // PHP
@@ -143,26 +122,18 @@ impl Cpu {
             // ROL accumulator
             0x2A => self.rol_accumulator(),
             // ROL zpg
-            0x26 => self.rol_zpg(),
             // ROL zpg, x
-            0x36 => self.rol_zpg_x(),
             // ROL abs
-            0x2E => self.rol_abs(),
             // ROL abs, x
-            0x3E => self.rol_abs_x(),
+            0x26 | 0x36 | 0x2E | 0x3E => self.rol(addr_mode),
             // ASL accumulator
             0x0A => self.asl_acc(),
             // ASL zpg
-            0x06 => self.asl_zpg(),
             // ASL zpg, X
-            0x16 => self.asl_zpg_x(),
             // ASL abs
-            0x0E => self.asl_abs(),
             // ASL abs, X
-            0x1E => self.asl_abs_x(),
-            _ => {
-                panic!("Instruction not implemented: {:#04X}", instruction)
-            }
+            0x06 | 0x16 | 0x0E | 0x1E => self.asl(addr_mode),
+            _ => panic!("Instruction not implemented: {:#04X}", instruction),
         }
     }
 
@@ -213,183 +184,153 @@ impl Cpu {
         2
     }
 
-    fn lda_immediate(&mut self) -> u8 {
-        let data = self.fetch_u8();
+    fn lda(&mut self, addr_mode: AddrMode) -> u8 {
+        let cycles: u8;
+        let data: u8;
+
+        match addr_mode {
+            AddrMode::Immediate => {
+                data = self.fetch_u8();
+
+                cycles = 2;
+            }
+            AddrMode::ZeroPage => {
+                let data_addr = self.fetch_u8();
+                data = self.memory.read_u8(data_addr as u16);
+
+                cycles = 3;
+            }
+            AddrMode::ZeroPageX => {
+                let data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
+                data = self.memory.read_u8(data_addr);
+
+                cycles = 3;
+            }
+            AddrMode::Abs => {
+                let data_addr = self.fetch_u16();
+                data = self.memory.read_u8(data_addr);
+
+                cycles = 4;
+            }
+            AddrMode::AbsX => {
+                let data_addr = self.fetch_u16() + self.x as u16;
+                data = self.memory.read_u8(data_addr);
+
+                cycles = 4 as u8 + (data_addr > 0x00FF) as u8;
+            }
+            AddrMode::AbsY => {
+                let data_addr = self.fetch_u16() + self.y as u16;
+                data = self.memory.read_u8(data_addr);
+
+                cycles = 4 as u8 + (data_addr > 0x00FF) as u8;
+            }
+            AddrMode::IndX => {
+                let addr_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
+                let data_addr = self.memory.read_u16(addr_addr);
+                data = self.memory.read_u8(data_addr);
+
+                cycles = 6;
+            }
+            AddrMode::IndY => {
+                let addr_addr = self.fetch_u8() as u16;
+                let data_addr = self.memory.read_u16(addr_addr) + self.y as u16;
+                data = self.memory.read_u8(data_addr);
+
+                cycles = 5 as u8 + (data_addr > 0x00FF) as u8;
+            }
+            _ => panic!("Addressing mode not supported"),
+        }
 
         self.a = data;
         self.set_zero_and_negative_flags(self.a);
 
-        2
+        cycles
     }
 
-    fn lda_zpg(&mut self) -> u8 {
-        let data_addr = self.fetch_u8();
-        let data = self.memory.read_u8(data_addr as u16);
+    fn ldx(&mut self, addr_mode: AddrMode) -> u8 {
+        let cycles: u8;
+        let data: u8;
 
-        self.a = data;
-        self.set_zero_and_negative_flags(self.a);
+        match addr_mode {
+            AddrMode::Immediate => {
+                data = self.fetch_u8();
 
-        3
-    }
+                cycles = 2;
+            }
+            AddrMode::ZeroPage => {
+                let data_addr = self.fetch_u8();
+                data = self.memory.read_u8(data_addr as u16);
 
-    fn lda_zpg_x(&mut self) -> u8 {
-        let data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
-        let data = self.memory.read_u8(data_addr);
+                cycles = 3;
+            }
+            AddrMode::ZeroPageY => {
+                let data_addr = (self.fetch_u8() as u16 + self.y as u16) & 0x00FF;
+                data = self.memory.read_u8(data_addr);
 
-        self.a = data;
-        self.set_zero_and_negative_flags(self.a);
+                cycles = 4;
+            }
+            AddrMode::Abs => {
+                let data_addr = self.fetch_u16();
+                data = self.memory.read_u8(data_addr);
 
-        3
-    }
+                cycles = 4;
+            }
+            AddrMode::AbsY => {
+                let data_addr = self.fetch_u16() + self.y as u16;
+                data = self.memory.read_u8(data_addr);
 
-    fn lda_abs(&mut self) -> u8 {
-        let data_addr = self.fetch_u16();
-        let data = self.memory.read_u8(data_addr);
-
-        self.a = data;
-        self.set_zero_and_negative_flags(self.a);
-
-        4
-    }
-
-    fn lda_abs_x(&mut self) -> u8 {
-        let data_addr = self.fetch_u16() + self.x as u16;
-        let data = self.memory.read_u8(data_addr);
-
-        self.a = data;
-        self.set_zero_and_negative_flags(self.a);
-
-        4 as u8 + (data_addr > 0x00FF) as u8
-    }
-
-    fn lda_abs_y(&mut self) -> u8 {
-        let data_addr = self.fetch_u16() + self.y as u16;
-        let data = self.memory.read_u8(data_addr);
-
-        self.a = data;
-        self.set_zero_and_negative_flags(self.a);
-
-        4 as u8 + (data_addr > 0x00FF) as u8
-    }
-
-    fn lda_ind_x(&mut self) -> u8 {
-        let addr_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
-        let data_addr = self.memory.read_u16(addr_addr);
-        let data = self.memory.read_u8(data_addr);
-
-        self.a = data;
-        self.set_zero_and_negative_flags(self.a);
-
-        6
-    }
-
-    fn lda_ind_y(&mut self) -> u8 {
-        let addr_addr = self.fetch_u8() as u16;
-        let data_addr = self.memory.read_u16(addr_addr) + self.y as u16;
-        let data = self.memory.read_u8(data_addr);
-
-        self.a = data;
-        self.set_zero_and_negative_flags(self.a);
-
-        5 as u8 + (data_addr > 0x00FF) as u8
-    }
-
-    fn ldx_immediate(&mut self) -> u8 {
-        let data = self.fetch_u8();
+                cycles = 4 as u8 + (data_addr > 0x00FF) as u8;
+            }
+            _ => panic!("Addressing mode not supported"),
+        }
 
         self.x = data;
         self.set_zero_and_negative_flags(self.x);
 
-        2
+        cycles
     }
 
-    fn ldx_zpg(&mut self) -> u8 {
-        let data_addr = self.fetch_u8() as u16;
-        let data = self.memory.read_u8(data_addr);
+    fn ldy(&mut self, addr_mode: AddrMode) -> u8 {
+        let cycles: u8;
+        let data: u8;
 
-        self.x = data;
-        self.set_zero_and_negative_flags(self.x);
+        match addr_mode {
+            AddrMode::Immediate => {
+                data = self.fetch_u8();
 
-        3
-    }
+                cycles = 2;
+            }
+            AddrMode::ZeroPage => {
+                let data_addr = self.fetch_u8() as u16;
+                data = self.memory.read_u8(data_addr);
 
-    fn ldx_zpg_y(&mut self) -> u8 {
-        let data_addr = (self.fetch_u8() as u16 + self.y as u16) & 0x00FF;
-        let data = self.memory.read_u8(data_addr);
+                cycles = 3;
+            }
+            AddrMode::ZeroPageX => {
+                let data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
+                data = self.memory.read_u8(data_addr);
 
-        self.x = data;
-        self.set_zero_and_negative_flags(self.x);
+                cycles = 4;
+            }
+            AddrMode::Abs => {
+                let data_addr = self.fetch_u16();
+                data = self.memory.read_u8(data_addr);
 
-        4
-    }
+                cycles = 4;
+            }
+            AddrMode::AbsX => {
+                let data_addr = self.fetch_u16() + self.x as u16;
+                data = self.memory.read_u8(data_addr);
 
-    fn ldx_abs(&mut self) -> u8 {
-        let data_addr = self.fetch_u16();
-        let data = self.memory.read_u8(data_addr);
-
-        self.x = data;
-        self.set_zero_and_negative_flags(self.x);
-
-        4
-    }
-
-    fn ldx_abs_y(&mut self) -> u8 {
-        let data_addr = self.fetch_u16() + self.y as u16;
-        let data = self.memory.read_u8(data_addr);
-
-        self.x = data;
-        self.set_zero_and_negative_flags(self.x);
-
-        4 as u8 + (data_addr > 0x00FF) as u8
-    }
-
-    fn ldy_immediate(&mut self) -> u8 {
-        let data = self.fetch_u8();
+                cycles = 4 as u8 + (data_addr > 0x00FF) as u8;
+            }
+            _ => panic!("Addressing mode not supported"),
+        }
 
         self.y = data;
         self.set_zero_and_negative_flags(self.y);
 
-        2
-    }
-
-    fn ldy_zpg(&mut self) -> u8 {
-        let data_addr = self.fetch_u8() as u16;
-        let data = self.memory.read_u8(data_addr);
-
-        self.y = data;
-        self.set_zero_and_negative_flags(self.y);
-
-        3
-    }
-
-    fn ldy_zpg_x(&mut self) -> u8 {
-        let data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
-        let data = self.memory.read_u8(data_addr);
-
-        self.y = data;
-        self.set_zero_and_negative_flags(self.y);
-
-        4
-    }
-
-    fn ldy_abs(&mut self) -> u8 {
-        let data_addr = self.fetch_u16();
-        let data = self.memory.read_u8(data_addr);
-
-        self.y = data;
-        self.set_zero_and_negative_flags(self.y);
-
-        4
-    }
-
-    fn ldy_abs_x(&mut self) -> u8 {
-        let data_addr = self.fetch_u16() + self.x as u16;
-        let data = self.memory.read_u8(data_addr);
-
-        self.y = data;
-        self.set_zero_and_negative_flags(self.y);
-
-        4 as u8 + (data_addr > 0x00FF) as u8
+        cycles
     }
 
     fn lsr_accumulator(&mut self) -> u8 {
@@ -402,9 +343,38 @@ impl Cpu {
         2
     }
 
-    fn lsr_zpg(&mut self) -> u8 {
-        let data_addr = self.fetch_u8() as u16;
-        let mut data = self.memory.read_u8(data_addr);
+    fn lsr(&mut self, addr_mode: AddrMode) -> u8 {
+        let cycles: u8;
+        let data_addr: u16;
+        let mut data: u8;
+
+        match addr_mode {
+            AddrMode::ZeroPage => {
+                data_addr = self.fetch_u8() as u16;
+                data = self.memory.read_u8(data_addr);
+
+                cycles = 5;
+            }
+            AddrMode::ZeroPageX => {
+                data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
+                data = self.memory.read_u8(data_addr);
+
+                cycles = 6;
+            }
+            AddrMode::Abs => {
+                data_addr = self.fetch_u16();
+                data = self.memory.read_u8(data_addr);
+
+                cycles = 6;
+            }
+            AddrMode::AbsX => {
+                data_addr = self.fetch_u16() + self.x as u16;
+                data = self.memory.read_u8(data_addr);
+
+                cycles = 7;
+            }
+            _ => panic!("Addressing mode not supported"),
+        }
 
         self.sr.carry = (data & MASK_LSB) != 0;
 
@@ -414,130 +384,60 @@ impl Cpu {
 
         self.set_zero_and_negative_flags(data);
 
-        5
+        cycles
     }
 
-    fn lsr_zpg_x(&mut self) -> u8 {
-        let data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
-        let mut data = self.memory.read_u8(data_addr);
+    fn ora(&mut self, addr_mode: AddrMode) -> u8 {
+        let data_addr: u16;
+        let data: u8;
+        let addr_addr: u16;
+        let cycles;
 
-        self.sr.carry = (data & MASK_LSB) != 0;
-
-        data = data >> 1;
-
-        self.memory.write_u8(data_addr, data);
-
-        self.set_zero_and_negative_flags(data);
-
-        6
-    }
-
-    fn lsr_abs(&mut self) -> u8 {
-        let data_addr = self.fetch_u16();
-        let mut data = self.memory.read_u8(data_addr);
-
-        self.sr.carry = (data & MASK_LSB) != 0;
-
-        data = data >> 1;
-
-        self.memory.write_u8(data_addr, data);
-
-        self.set_zero_and_negative_flags(data);
-
-        6
-    }
-
-    fn lsr_abs_x(&mut self) -> u8 {
-        let data_addr = self.fetch_u16() + self.x as u16;
-        let mut data = self.memory.read_u8(data_addr);
-
-        self.sr.carry = (data & MASK_LSB) != 0;
-
-        data = data >> 1;
-
-        self.memory.write_u8(data_addr, data);
-
-        self.set_zero_and_negative_flags(data);
-
-        7
-    }
-
-    fn ora_immediate(&mut self) -> u8 {
-        let data = self.fetch_u8();
+        match addr_mode {
+            AddrMode::Immediate => {
+                data = self.fetch_u8();
+                cycles = 2;
+            }
+            AddrMode::ZeroPage => {
+                data_addr = self.fetch_u8() as u16;
+                data = self.memory.read_u8(data_addr);
+                cycles = 3;
+            }
+            AddrMode::ZeroPageX => {
+                data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
+                data = self.memory.read_u8(data_addr);
+                cycles = 4;
+            }
+            AddrMode::Abs => {
+                data_addr = self.fetch_u16();
+                data = self.memory.read_u8(data_addr);
+                cycles = 4;
+            }
+            AddrMode::AbsX => {
+                data_addr = self.fetch_u16() + self.x as u16;
+                data = self.memory.read_u8(data_addr);
+                cycles = 4 as u8 + (data_addr > 0x00FF) as u8
+            }
+            AddrMode::IndX => {
+                addr_addr = (self.fetch_u8() as u16 + self.x as u16) & 0xFF;
+                data_addr = self.memory.read_u16(addr_addr);
+                data = self.memory.read_u8(data_addr);
+                cycles = 6;
+            }
+            AddrMode::IndY => {
+                addr_addr = self.fetch_u8() as u16;
+                data_addr = addr_addr + self.y as u16;
+                data = self.memory.read_u8(data_addr);
+                cycles = 5 as u8 + (data_addr > 0xFF) as u8
+            }
+            _ => panic!("Addressing mode not supported"),
+        }
 
         self.a = self.a | data;
 
         self.set_zero_and_negative_flags(self.a);
 
-        2
-    }
-
-    fn ora_zpg(&mut self) -> u8 {
-        let data_addr = self.fetch_u8() as u16;
-        let data = self.memory.read_u8(data_addr);
-
-        self.a = self.a | data;
-
-        self.set_zero_and_negative_flags(self.a);
-
-        3
-    }
-
-    fn ora_zpg_x(&mut self) -> u8 {
-        let data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
-        let data = self.memory.read_u8(data_addr);
-
-        self.a = self.a | data;
-
-        self.set_zero_and_negative_flags(self.a);
-
-        4
-    }
-
-    fn ora_abs(&mut self) -> u8 {
-        let data_addr = self.fetch_u16();
-        let data = self.memory.read_u8(data_addr);
-
-        self.a = self.a | data;
-        
-        self.set_zero_and_negative_flags(self.a);
-
-        4
-    }
-
-    fn ora_abs_x(&mut self) -> u8 {
-        let data_addr = self.fetch_u16() + self.x as u16;
-        let data = self.memory.read_u8(data_addr);
-
-        self.a = self.a | data;
-        
-        self.set_zero_and_negative_flags(self.a);
-
-        4 as u8 + (data_addr > 0x00FF) as u8
-    }
-
-    fn ora_indirect_x(&mut self) -> u8 {
-        let addr_addr = (self.fetch_u8() as u16 + self.x as u16) & 0xFF;
-        let data_addr = self.memory.read_u16(addr_addr);
-        let data = self.memory.read_u8(data_addr);
-
-        self.a = self.a | data;
-        
-        self.set_zero_and_negative_flags(self.a);
-
-        6
-    }
-
-    fn ora_indirect_y(&mut self) -> u8 {
-        let addr_addr = self.fetch_u8() as u16;
-        let data_addr = addr_addr + self.y as u16;
-        let data = self.memory.read_u8(data_addr);
-
-        self.a = self.a | data;
-        
-        self.set_zero_and_negative_flags(self.a);
-
-        5 as u8 + (data_addr > 0xFF) as u8
+        cycles
     }
 
     fn push_accumulator(&mut self) -> u8 {
@@ -556,7 +456,7 @@ impl Cpu {
     fn pull_accumulator(&mut self) -> u8 {
         let popped_acc = self.stack.pop_u8();
         self.a = popped_acc;
-        
+
         self.set_zero_and_negative_flags(popped_acc);
 
         4
@@ -569,11 +469,56 @@ impl Cpu {
         4
     }
 
+    fn rol(&mut self, addr_mode: AddrMode) -> u8 {
+        let old_carry: u8;
+        let mut data: u8;
+        let data_addr: u16;
+        let cycles;
+
+        match addr_mode {
+            AddrMode::ZeroPage => {
+                old_carry = self.sr.carry as u8;
+                data_addr = self.fetch_u8() as u16;
+                data = self.memory.read_u8(data_addr);
+                cycles = 5;
+            }
+            AddrMode::ZeroPageX => {
+                old_carry = self.sr.carry as u8;
+                data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
+                data = self.memory.read_u8(data_addr);
+                cycles = 6;
+            }
+            AddrMode::Abs => {
+                old_carry = self.sr.carry as u8;
+                data_addr = self.fetch_u16();
+                data = self.memory.read_u8(data_addr);
+                cycles = 6;
+            }
+            AddrMode::AbsX => {
+                old_carry = self.sr.carry as u8;
+                data_addr = self.fetch_u16() + self.x as u16;
+                data = self.memory.read_u8(data_addr);
+                cycles = 7;
+            }
+            _ => panic!("Addressing mode not supported"),
+        }
+
+        self.sr.carry = (data & MASK_MSB) != 0;
+
+        data = (data << 1) | old_carry;
+
+        self.set_zero_and_negative_flags(data);
+
+        self.memory.write_u8(data_addr, data);
+
+        cycles
+    }
+
     fn rol_accumulator(&mut self) -> u8 {
         let old_carry = self.sr.carry as u8;
 
         self.sr.carry = (self.a & MASK_MSB) != 0;
-        
+
         self.a = (self.a << 1) | old_carry;
 
         self.set_zero_and_negative_flags(self.a);
@@ -581,139 +526,55 @@ impl Cpu {
         2
     }
 
-    fn rol_zpg(&mut self) -> u8 {
-        let old_carry = self.sr.carry as u8;
-        let data_addr = self.fetch_u8() as u16;
-        let mut data = self.memory.read_u8(data_addr);
+    fn asl(&mut self, addr_mode: AddrMode) -> u8 {
+        let data_addr: u16;
+        let mut data: u8;
+        let cycles;
+
+        match addr_mode {
+            AddrMode::ZeroPage => {
+                data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
+                data = self.memory.read_u8(data_addr);
+                cycles = 5;
+            }
+            AddrMode::ZeroPageX => {
+                data_addr = self.fetch_u8() as u16;
+                data = self.memory.read_u8(data_addr);
+                cycles = 5;
+            }
+            AddrMode::Abs => {
+                data_addr = self.fetch_u16();
+                data = self.memory.read_u8(data_addr);
+                cycles = 6;
+            }
+            AddrMode::AbsX => {
+                data_addr = self.fetch_u16() + self.x as u16;
+                data = self.memory.read_u8(data_addr);
+                cycles = 7;
+            }
+            _ => panic!("Addressing mode not supported"),
+        }
 
         self.sr.carry = (data & MASK_MSB) != 0;
 
-        data = (data << 1) | old_carry;
-
-        self.set_zero_and_negative_flags(data);
-        
-        self.memory.write_u8(data_addr, data);
-
-        5
-    }
-
-    fn rol_zpg_x(&mut self) -> u8 {
-        let old_carry = self.sr.carry as u8;
-        let data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
-        let mut data = self.memory.read_u8(data_addr);
-
-        self.sr.carry = (data & MASK_MSB) != 0;
-
-        data = (data << 1) | old_carry;
-
-        self.set_zero_and_negative_flags(data);
-
-        self.memory.write_u8(data_addr, data);
-
-        6
-    }
-
-    fn rol_abs(&mut self) -> u8 {
-        let old_carry = self.sr.carry as u8;
-        let data_addr = self.fetch_u16();
-        let mut data = self.memory.read_u8(data_addr);
-
-        self.sr.carry = (data & MASK_MSB) != 0;
-        
-        data = (data << 1) | old_carry;
-        
-        self.set_zero_and_negative_flags(data);
-
-        self.memory.write_u8(data_addr, data);
-
-        6
-    }
-
-    fn rol_abs_x(&mut self) -> u8 {
-        let old_carry = self.sr.carry as u8;
-        let data_addr = self.fetch_u16() + self.x as u16;
-        let mut data = self.memory.read_u8(data_addr);
-
-        self.sr.carry = (data & MASK_MSB) != 0;
-        
-        data = (data << 1) | old_carry;
+        data = data << 1;
 
         self.set_zero_and_negative_flags(data);
 
         self.memory.write_u8(data_addr, data);
 
-        7
+        cycles
     }
 
     fn asl_acc(&mut self) -> u8 {
         let old_byte = self.a;
 
         self.sr.carry = (old_byte & MASK_MSB) != 0;
-        
+
         self.a = self.a << 1;
-        
+
         self.set_zero_and_negative_flags(self.a);
 
         2
-    }
-
-    fn asl_zpg(&mut self) -> u8 {
-        let data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
-        let mut data = self.memory.read_u8(data_addr);
-
-        self.sr.carry = (data & MASK_MSB) != 0;
-        
-        data = data << 1;
-        
-        self.set_zero_and_negative_flags(data);
-
-        self.memory.write_u8(data_addr, data);
-
-        5
-    }
-
-    fn asl_zpg_x(&mut self) -> u8 {
-        let data_addr = self.fetch_u8() as u16;
-        let mut data = self.memory.read_u8(data_addr);
-
-        self.sr.carry = (data & MASK_MSB) != 0;
-        
-        data = data << 1;
-        
-        self.set_zero_and_negative_flags(data);
-
-        self.memory.write_u8(data_addr, data);
-
-        6
-    }
-
-    fn asl_abs(&mut self) -> u8 {
-        let data_addr = self.fetch_u16();
-        let mut data = self.memory.read_u8(data_addr);
-
-        self.sr.carry = (data & MASK_MSB) != 0;
-        
-        data = data << 1;
-        
-        self.set_zero_and_negative_flags(data);
-
-        self.memory.write_u8(data_addr, data);
-
-        6
-    }
-
-    fn asl_abs_x(&mut self) -> u8 {
-        let data_addr = self.fetch_u16() + self.x as u16;
-        let mut data = self.memory.read_u8(data_addr);
-
-        self.sr.carry = (data & MASK_MSB) != 0;
-        
-        data = data << 1;
-        
-        self.set_zero_and_negative_flags(data);
-
-        self.memory.write_u8(data_addr, data);
-
-        7
     }
 }

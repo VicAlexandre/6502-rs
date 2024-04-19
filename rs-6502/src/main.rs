@@ -1,6 +1,7 @@
 use crate::cpu::Cpu;
 use std::env;
 
+mod addressing_mode;
 mod cpu;
 mod memory;
 mod stack;
@@ -27,7 +28,7 @@ fn main() {
         cycles += cpu.execute() as u32;
         println!("Cycles: {}", cycles);
         cpu.status();
-        
+
         // wait for a key press
         println!("Press Enter to continue...");
         std::io::stdin().read_line(&mut String::new()).unwrap();
