@@ -156,6 +156,10 @@ impl Cpu {
             0x9A => self.txs(),
             // TYA
             0x98 => self.tya(),
+            // ADC immediate / zpg / zpg, x / abs / abs, x / abs, y / (ind, x) / (ind), y
+            0x69 | 0x65 | 0x75 | 0x6D | 0x7D | 0x79 | 0x61 | 0x71 => self.adc(addr_mode),
+            // AND immediate / zpg / zpg, x / abs / abs, x / abs, y / (ind, x) / (ind), y
+            0x29 | 0x25 | 0x35 | 0x2D | 0x3D | 0x39 | 0x21 | 0x31 => self.and(addr_mode),
             _ => panic!("Instruction not implemented: {:#04X}", opcode),
         }
     }
@@ -706,4 +710,112 @@ impl Cpu {
 
         2
     }
+
+    fn adc(&mut self, addr_mode: AddrMode) -> u8 {
+        let data: u8;
+        let cycles: u8;
+
+        match addr_mode {
+            AddrMode::Immediate => {
+                data = self.fetch_u8();
+                cycles = 2;
+            }
+            AddrMode::ZeroPage => {
+                let data_addr = self.get_zero_page_addr();
+                data = self.memory.read_u8(data_addr);
+                cycles = 3;
+            }
+            AddrMode::ZeroPageX => {
+                let data_addr = self.get_zero_page_x_addr();
+                data = self.memory.read_u8(data_addr);
+                cycles = 4;
+            }
+            AddrMode::Abs => {
+                let data_addr = self.get_absolute_addr();
+                data = self.memory.read_u8(data_addr);
+                cycles = 4;
+            }
+            AddrMode::AbsX => {
+                let data_addr = self.get_absolute_x_addr();
+                data = self.memory.read_u8(data_addr);
+                cycles = 4 + (data_addr > 0x00FF) as u8;
+            }
+            AddrMode::AbsY => {
+                let data_addr = self.get_absolute_y_addr();
+                data = self.memory.read_u8(data_addr);
+                cycles = 4 + (data_addr > 0x00FF) as u8;
+            }
+            AddrMode::IndX => {
+                let data_addr = self.get_indirect_x_addr();
+                data = self.memory.read_u8(data_addr);
+                cycles = 6;
+            }
+            AddrMode::IndY => {
+                let data_addr = self.get_indirect_y_addr();
+                data = self.memory.read_u8(data_addr);
+                cycles = 5 + (data_addr > 0x00FF) as u8;
+            }
+            _ => panic!("Addressing mode not supported"),
+        }
+
+        self.sr.carry = data as u16 + self.a as u16 + self.sr.carry as u16 > 0xFF;
+        self.sr.overflow = data as u16 + self.a as u16 + self.sr.carry as u16 > 0xFF;
+        self.a += data + self.sr.carry as u8;
+
+        cycles
+    }
+
+    fn and(&mut self, addr_mode: AddrMode) -> u8 {
+        let data: u8;
+        let cycles: u8;
+
+        match addr_mode {
+            AddrMode::Immediate => {
+                data = self.fetch_u8();
+                cycles = 2;
+            }
+            AddrMode::ZeroPage => {
+                let data_addr = self.get_zero_page_addr();
+                data = self.memory.read_u8(data_addr);
+                cycles = 3;
+            }
+            AddrMode::ZeroPageX => {
+                let data_addr = self.get_zero_page_x_addr();
+                data = self.memory.read_u8(data_addr);
+                cycles = 4;
+            }
+            AddrMode::Abs => {
+                let data_addr = self.get_absolute_addr();
+                data = self.memory.read_u8(data_addr);
+                cycles = 4;
+            }
+            AddrMode::AbsX => {
+                let data_addr = self.get_absolute_x_addr();
+                data = self.memory.read_u8(data_addr);
+                cycles = 4 + (data_addr > 0x00FF) as u8;
+            }
+            AddrMode::AbsY => {
+                let data_addr = self.get_absolute_y_addr();
+                data = self.memory.read_u8(data_addr);
+                cycles = 4 + (data_addr > 0x00FF) as u8;
+            }
+            AddrMode::IndX => {
+                let data_addr = self.get_indirect_x_addr();
+                data = self.memory.read_u8(data_addr);
+                cycles = 6;
+            }
+            AddrMode::IndY => {
+                let data_addr = self.get_indirect_y_addr();
+                data = self.memory.read_u8(data_addr);
+                cycles = 5 + (data_addr > 0x00FF) as u8;
+            }
+            _ => panic!("Addressing mode not supported"),
+        }
+
+        self.a = self.a & data;
+        self.set_zero_and_negative_flags(self.a);
+
+        cycles
+    }
+    
 }
