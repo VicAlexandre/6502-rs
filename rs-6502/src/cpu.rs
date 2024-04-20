@@ -1,5 +1,8 @@
 use crate::{
-    addressing_mode::{get_addr_mode, AddrMode}, memory::Memory, stack::Stack, status_register::StatusRegister,
+    addressing_mode::{get_addr_mode, AddrMode},
+    memory::Memory,
+    stack::Stack,
+    status_register::StatusRegister,
 };
 
 const MASK_MSB: u8 = 0b10000000;
@@ -47,7 +50,10 @@ impl Cpu {
         print!("PC: {:#06X}\t", self.pc);
         print!("SP: {:#04X}\n", self.stack.sp);
         self.sr.status();
-        println!("Next instruction opcode: {:#04X}", self.memory.read_u8(self.pc));
+        println!(
+            "Next instruction opcode: {:#04X}",
+            self.memory.read_u8(self.pc)
+        );
     }
 
     fn set_zero_and_negative_flags(&mut self, data: u8) {
@@ -160,6 +166,8 @@ impl Cpu {
             0x69 | 0x65 | 0x75 | 0x6D | 0x7D | 0x79 | 0x61 | 0x71 => self.adc(addr_mode),
             // AND immediate / zpg / zpg, x / abs / abs, x / abs, y / (ind, x) / (ind), y
             0x29 | 0x25 | 0x35 | 0x2D | 0x3D | 0x39 | 0x21 | 0x31 => self.and(addr_mode),
+            // BCC
+            0x90 | 0xB0 | 0xF0 | 0x30 | 0xD0 | 0x10 | 0x50 | 0x70 => self.branch(opcode),
             _ => panic!("Instruction not implemented: {:#04X}", opcode),
         }
     }
@@ -173,6 +181,36 @@ impl Cpu {
         self.sr.brk = true;
 
         7
+    }
+
+    fn branch(&mut self, opcode: u8) -> u8 {
+        let branch_offset = self.fetch_u8();
+        let old_pc: u16 = self.pc;
+        let branch_condition: bool;
+        let mut cycles = 2;
+
+        match opcode {
+            0x90 => branch_condition = self.sr.carry == false,
+            0xB0 => branch_condition = self.sr.carry == true,
+            0xF0 => branch_condition = self.sr.zero == true,
+            0xD0 => branch_condition = self.sr.zero == false,
+            0x30 => branch_condition = self.sr.negative == true,
+            0x10 => branch_condition = self.sr.negative == false,
+            0x50 => branch_condition = self.sr.overflow == false,
+            0x70 => branch_condition = self.sr.overflow == true,
+            _ => panic!("Invalid branching mode!"),
+        }
+
+        if branch_condition {
+            self.pc += branch_offset as u16;
+            cycles += 1;
+
+            if ((old_pc >> 8) - (self.pc >> 8)) != 0 {
+                cycles += 2;
+            }
+        }
+
+        cycles
     }
 
     fn clear_carry(&mut self) -> u8 {
@@ -817,5 +855,4 @@ impl Cpu {
 
         cycles
     }
-    
 }

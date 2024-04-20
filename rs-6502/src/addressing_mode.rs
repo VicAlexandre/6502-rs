@@ -37,130 +37,135 @@ pub fn get_addr_mode(opcode: u8) -> AddrMode {
     match lo_nibble {
         0x00 => {
             if hi_nibble == 0x80 {
-                panic!("Illegal opcode, no addressing mode available: {:#04X}", opcode)
+                panic!(
+                    "Illegal opcode, no addressing mode available: {:#04X}",
+                    opcode
+                )
             }
 
             if hi_nibble == 0x00 || hi_nibble == 0x40 || hi_nibble == 0x60 {
                 AddrMode::Impl
-            }
-            else if hi_nibble % 2 == 1 {
+            } else if hi_nibble % 2 == 1 {
                 AddrMode::Rel
-            }
-            else if hi_nibble == 0xA0 || hi_nibble == 0xC0 || hi_nibble == 0xE0 {
+            } else if hi_nibble == 0xA0 || hi_nibble == 0xC0 || hi_nibble == 0xE0 {
                 AddrMode::Immediate
-            }
-            else if hi_nibble == 0x20 {
+            } else if hi_nibble == 0x20 {
                 AddrMode::Abs
-            }
-            else {
-                panic!("Illegal opcode, no addressing mode available: {:#04X}", opcode)
+            } else {
+                panic!(
+                    "Illegal opcode, no addressing mode available: {:#04X}",
+                    opcode
+                )
             }
         }
         0x01 => {
             if hi_nibble % 2 == 0 {
                 AddrMode::IndX
-            }
-            else {
+            } else {
                 AddrMode::IndY
             }
         }
         0x02 => {
             if hi_nibble == 0xA0 {
                 AddrMode::Immediate
-            }
-            else {
-                panic!("Illegal opcode, no addressing mode available: {:#04X}", opcode)
+            } else {
+                panic!(
+                    "Illegal opcode, no addressing mode available: {:#04X}",
+                    opcode
+                )
             }
         }
         0x04 => {
             if hi_nibble == 0x20 || (hi_nibble >= 8 && hi_nibble % 2 == 0) {
                 AddrMode::ZeroPage
-            }
-            else if hi_nibble == 0x90 || hi_nibble == 0xB0 {
+            } else if hi_nibble == 0x90 || hi_nibble == 0xB0 {
                 AddrMode::ZeroPageX
-            }
-            else {
-                panic!("Illegal opcode, no addressing mode available: {:#04X}", opcode)
+            } else {
+                panic!(
+                    "Illegal opcode, no addressing mode available: {:#04X}",
+                    opcode
+                )
             }
         }
         0x05 => {
             if hi_nibble % 2 == 0 {
                 AddrMode::ZeroPage
-            }
-            else {
+            } else {
                 AddrMode::ZeroPageX
             }
         }
         0x06 => {
             if hi_nibble % 2 == 0 {
                 AddrMode::ZeroPage
-            }
-            else if hi_nibble == 0x90 || hi_nibble == 0xB0 {
+            } else if hi_nibble == 0x90 || hi_nibble == 0xB0 {
                 AddrMode::ZeroPageY
-            }
-            else {
+            } else {
                 AddrMode::ZeroPageX
             }
         }
         0x08 => AddrMode::Impl,
         0x09 => {
             if hi_nibble == 0x80 {
-                panic!("Illegal opcode, no addressing mode available: {:#04X}", opcode)
-            }
-            else if hi_nibble % 2 == 0 {
+                panic!(
+                    "Illegal opcode, no addressing mode available: {:#04X}",
+                    opcode
+                )
+            } else if hi_nibble % 2 == 0 {
                 AddrMode::Immediate
-            }
-            else {
+            } else {
                 AddrMode::AbsY
             }
         }
         0x0A => {
             if hi_nibble <= 0x60 && hi_nibble % 2 == 0 {
                 AddrMode::Accumulator
-            }
-            else if (hi_nibble >= 0x80 && hi_nibble <= 0xC0) || hi_nibble == 0xE0 {
+            } else if (hi_nibble >= 0x80 && hi_nibble <= 0xC0) || hi_nibble == 0xE0 {
                 AddrMode::Impl
-            }
-            else {
-                panic!("Illegal opcode, no addressing mode available: {:#04X}", opcode)
+            } else {
+                panic!(
+                    "Illegal opcode, no addressing mode available: {:#04X}",
+                    opcode
+                )
             }
         }
         0x0C => {
             if hi_nibble != 0x00 && hi_nibble != 0x60 && hi_nibble % 2 == 0 {
                 AddrMode::Abs
-            }
-            else if hi_nibble == 0x60 {
+            } else if hi_nibble == 0x60 {
                 AddrMode::Ind
-            }
-            else if hi_nibble == 0xB0 {
+            } else if hi_nibble == 0xB0 {
                 AddrMode::AbsX
-            }
-            else {
-                panic!("Illegal opcode, no addressing mode available: {:#04X}", opcode)
+            } else {
+                panic!(
+                    "Illegal opcode, no addressing mode available: {:#04X}",
+                    opcode
+                )
             }
         }
         0x0D => {
             if hi_nibble % 2 == 0 {
                 AddrMode::Abs
-            }
-            else {
+            } else {
                 AddrMode::AbsX
             }
         }
         0x0E => {
             if hi_nibble % 2 == 0 {
                 AddrMode::Abs
-            }
-            else if hi_nibble == 0xB0 {
+            } else if hi_nibble == 0xB0 {
                 AddrMode::AbsY
-            }
-            else if hi_nibble == 0x90 {
-                panic!("Illegal opcode, no addressing mode available: {:#04X}", opcode)
-            }
-            else {
+            } else if hi_nibble == 0x90 {
+                panic!(
+                    "Illegal opcode, no addressing mode available: {:#04X}",
+                    opcode
+                )
+            } else {
                 AddrMode::AbsX
             }
         }
-        _ => panic!("Illegal opcode, no addressing mode available: {:#04X}", opcode)
+        _ => panic!(
+            "Illegal opcode, no addressing mode available: {:#04X}",
+            opcode
+        ),
     }
 }
