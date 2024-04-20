@@ -110,41 +110,17 @@ impl Cpu {
             0xC8 => self.inc_y(),
             // INX
             0xE8 => self.inc_x(),
-            // LDA immediate
-            // LDA zpg
-            // LDA zpg, X
-            // LDA abs
-            // LDA abs, X
-            // LDA abs, y
-            // LDA (ind, x)
-            // LDA (ind), y
+            // LDA immediate / zpg / zpg, x / abs / abs, x / abs, y / ind, x / ind, y
             0xA9 | 0xA5 | 0xB5 | 0xAD | 0xBD | 0xB9 | 0xA1 | 0xB1 => self.lda(addr_mode),
-            // LDX immediate
-            // LDX zpg
-            // LDX zpg, y
-            // LDX abs
-            // LDX abs, y
+            // LDX immediate / zpg / zpg, y / abs / abs, y
             0xA2 | 0xA6 | 0xB6 | 0xAE | 0xBE => self.ldx(addr_mode),
-            // LDY immediate
-            // LDY zpg
-            // LDY zpg, x
-            // LDY abs
-            // LDY abs, x
+            // LDY immediate / zpg / zpg, x / abs / abs, x
             0xA0 | 0xA4 | 0xB4 | 0xAC | 0xBC => self.ldy(addr_mode),
             // LSR accumulator
             0x4A => self.lsr_accumulator(),
-            // LSR zpg
-            // LSR zpg, x
-            // LSR abs
-            // LSR abs, x
+            // LSR zpg / zpg, x / abs / abs, x
             0x46 | 0x56 | 0x4E | 0x5E => self.lsr(addr_mode),
-            // ORA immediate
-            // ORA zpg
-            // ORA abs
-            // ORA zpg, x
-            // ORA abs, x
-            // ORA (indirect, x)
-            // ORA (indirect), y
+            // ORA immediate / zpg / abs / zpg, x / abs, x / (ind, x) / (ind), y
             0x09 | 0x05 | 0x15 | 0x0D | 0x1D | 0x01 | 0x11 => self.ora(addr_mode),
             // PHA
             0x48 => self.push_accumulator(),
@@ -156,18 +132,13 @@ impl Cpu {
             0x28 => self.pull_processor_status(),
             // ROL accumulator
             0x2A => self.rol_accumulator(),
-            // ROL zpg
-            // ROL zpg, x
-            // ROL abs
-            // ROL abs, x
+            // ROL zpg / zpg, x / abs / abs, x
             0x26 | 0x36 | 0x2E | 0x3E => self.rol(addr_mode),
             // ASL accumulator
             0x0A => self.asl_acc(),
-            // ASL zpg
-            // ASL zpg, X
-            // ASL abs
-            // ASL abs, X
+            // ASL zpg / zpg, x / abs / abs, x
             0x06 | 0x16 | 0x0E | 0x1E => self.asl(addr_mode),
+            // STA zpg / zpg, x / abs / abs, x / abs, y / (ind, x) / (ind), y
             0x85 | 0x95 | 0x8D | 0x9D | 0x99 | 0x81 | 0x91 => self.sta(addr_mode),
             _ => panic!("Instruction not implemented: {:#04X}", opcode),
         }
