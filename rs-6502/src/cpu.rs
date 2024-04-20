@@ -140,6 +140,14 @@ impl Cpu {
             0x06 | 0x16 | 0x0E | 0x1E => self.asl(addr_mode),
             // STA zpg / zpg, x / abs / abs, x / abs, y / (ind, x) / (ind), y
             0x85 | 0x95 | 0x8D | 0x9D | 0x99 | 0x81 | 0x91 => self.sta(addr_mode),
+            // STX zpg / zpg, y / abs
+            0x86 | 0x96 | 0x8E => self.stx(addr_mode),
+            // STY zpg / zpg, x / abs
+            0x84 | 0x94 | 0x8C => self.sty(addr_mode),
+            // TAX
+            0xAA => self.tax(),
+            // TAY
+            0xA8 => self.tay(),
             _ => panic!("Instruction not implemented: {:#04X}", opcode),
         }
     }
@@ -599,4 +607,67 @@ impl Cpu {
         cycles
     }
 
+    fn stx(&mut self, addr_mode: AddrMode) -> u8 {
+        let data_addr: u16;
+        let cycles: u8;
+
+        match addr_mode {
+            AddrMode::ZeroPage => {
+                data_addr = self.get_zero_page_addr();
+                cycles = 3;
+            }
+            AddrMode::ZeroPageY => {
+                data_addr = self.get_zero_page_y_addr();
+                cycles = 4;
+            }
+            AddrMode::Abs => {
+                data_addr = self.get_absolute_addr();
+                cycles = 4;
+            }
+            _ => panic!("Addressing mode not supported"),
+        }
+
+        self.memory.write_u8(data_addr, self.x);
+
+        cycles
+    }
+
+    fn sty(&mut self, addr_mode: AddrMode) -> u8 {
+        let data_addr: u16;
+        let cycles: u8;
+
+        match addr_mode {
+            AddrMode::ZeroPage => {
+                data_addr = self.get_zero_page_addr();
+                cycles = 3;
+            }
+            AddrMode::ZeroPageX => {
+                data_addr = self.get_zero_page_x_addr();
+                cycles = 4;
+            }
+            AddrMode::Abs => {
+                data_addr = self.get_absolute_addr();
+                cycles = 4;
+            }
+            _ => panic!("Addressing mode not supported"),
+        }
+
+        self.memory.write_u8(data_addr, self.y);
+
+        cycles
+    }
+
+    fn tax(&mut self) -> u8 {
+        self.x = self.a;
+        self.set_zero_and_negative_flags(self.x);
+
+        2
+    }
+
+    fn tay(&mut self) -> u8 {
+        self.y = self.a;
+        self.set_zero_and_negative_flags(self.y);
+
+        2
+    }
 }
