@@ -148,6 +148,14 @@ impl Cpu {
             0xAA => self.tax(),
             // TAY
             0xA8 => self.tay(),
+            // TSX
+            0xBA => self.tsx(),
+            // TXA
+            0x8A => self.txa(),
+            // TXS
+            0x9A => self.txs(),
+            // TYA
+            0x98 => self.tya(),
             _ => panic!("Instruction not implemented: {:#04X}", opcode),
         }
     }
@@ -667,6 +675,34 @@ impl Cpu {
     fn tay(&mut self) -> u8 {
         self.y = self.a;
         self.set_zero_and_negative_flags(self.y);
+
+        2
+    }
+
+    fn tsx(&mut self) -> u8 {
+        self.x = self.stack.sp;
+        self.set_zero_and_negative_flags(self.x);
+
+        2
+    }
+
+    fn txa(&mut self) -> u8 {
+        self.a = self.x;
+        self.set_zero_and_negative_flags(self.a);
+
+        2
+    }
+
+    fn txs(&mut self) -> u8 {
+        self.stack.sp = self.x;
+        self.set_zero_and_negative_flags(self.stack.sp);
+
+        2
+    }
+
+    fn tya(&mut self) -> u8 {
+        self.a = self.y;
+        self.set_zero_and_negative_flags(self.a);
 
         2
     }
