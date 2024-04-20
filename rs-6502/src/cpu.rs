@@ -55,6 +55,40 @@ impl Cpu {
         self.sr.negative = (data & MASK_MSB) != 0;
     }
 
+    fn get_zero_page_addr(&mut self) -> u16 {
+        self.fetch_u8() as u16
+    }
+
+    fn get_zero_page_x_addr(&mut self) -> u16 {
+        (self.fetch_u8() as u16 + self.x as u16) & 0x00FF
+    }
+
+    fn get_zero_page_y_addr(&mut self) -> u16 {
+        (self.fetch_u8() as u16 + self.y as u16) & 0x00FF
+    }
+
+    fn get_absolute_addr(&mut self) -> u16 {
+        self.fetch_u16()
+    }
+
+    fn get_absolute_x_addr(&mut self) -> u16 {
+        self.fetch_u16() + self.x as u16
+    }
+
+    fn get_absolute_y_addr(&mut self) -> u16 {
+        self.fetch_u16() + self.y as u16
+    }
+
+    fn get_indirect_x_addr(&mut self) -> u16 {
+        let addr_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
+        self.memory.read_u16(addr_addr)
+    }
+
+    fn get_indirect_y_addr(&mut self) -> u16 {
+        let addr_addr = self.fetch_u8() as u16;
+        self.memory.read_u16(addr_addr) + self.y as u16
+    }
+
     pub fn execute(&mut self) -> u8 {
         let opcode = self.fetch_u8();
         let addr_mode = get_addr_mode(opcode);
@@ -134,6 +168,7 @@ impl Cpu {
             // ASL abs
             // ASL abs, X
             0x06 | 0x16 | 0x0E | 0x1E => self.asl(addr_mode),
+            0x85 | 0x95 | 0x8D | 0x9D | 0x99 | 0x81 | 0x91 => self.sta(addr_mode),
             _ => panic!("Instruction not implemented: {:#04X}", opcode),
         }
     }
@@ -192,51 +227,41 @@ impl Cpu {
         match addr_mode {
             AddrMode::Immediate => {
                 data = self.fetch_u8();
-
                 cycles = 2;
             }
             AddrMode::ZeroPage => {
-                let data_addr = self.fetch_u8() as u16;
+                let data_addr = self.get_zero_page_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 3;
             }
             AddrMode::ZeroPageX => {
-                let data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
+                let data_addr = self.get_zero_page_x_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 3;
             }
             AddrMode::Abs => {
-                let data_addr = self.fetch_u16();
+                let data_addr = self.get_absolute_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 4;
             }
             AddrMode::AbsX => {
-                let data_addr = self.fetch_u16() + self.x as u16;
+                let data_addr = self.get_absolute_x_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 4 as u8 + (data_addr > 0x00FF) as u8;
             }
             AddrMode::AbsY => {
-                let data_addr = self.fetch_u16() + self.y as u16;
+                let data_addr = self.get_absolute_y_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 4 as u8 + (data_addr > 0x00FF) as u8;
             }
             AddrMode::IndX => {
-                let addr_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
-                let data_addr = self.memory.read_u16(addr_addr);
+                let data_addr = self.get_indirect_x_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 6;
             }
             AddrMode::IndY => {
-                let addr_addr = self.fetch_u8() as u16;
-                let data_addr = self.memory.read_u16(addr_addr) + self.y as u16;
+                let data_addr = self.get_indirect_y_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 5 as u8 + (data_addr > 0x00FF) as u8;
             }
             _ => panic!("Addressing mode not supported"),
@@ -255,31 +280,26 @@ impl Cpu {
         match addr_mode {
             AddrMode::Immediate => {
                 data = self.fetch_u8();
-
                 cycles = 2;
             }
             AddrMode::ZeroPage => {
-                let data_addr = self.fetch_u8();
-                data = self.memory.read_u8(data_addr as u16);
-
+                let data_addr = self.get_zero_page_addr();
+                data = self.memory.read_u8(data_addr);
                 cycles = 3;
             }
             AddrMode::ZeroPageY => {
-                let data_addr = (self.fetch_u8() as u16 + self.y as u16) & 0x00FF;
+                let data_addr = self.get_zero_page_y_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 4;
             }
             AddrMode::Abs => {
-                let data_addr = self.fetch_u16();
+                let data_addr = self.get_absolute_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 4;
             }
             AddrMode::AbsY => {
-                let data_addr = self.fetch_u16() + self.y as u16;
+                let data_addr = self.get_absolute_y_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 4 as u8 + (data_addr > 0x00FF) as u8;
             }
             _ => panic!("Addressing mode not supported"),
@@ -298,31 +318,26 @@ impl Cpu {
         match addr_mode {
             AddrMode::Immediate => {
                 data = self.fetch_u8();
-
                 cycles = 2;
             }
             AddrMode::ZeroPage => {
-                let data_addr = self.fetch_u8() as u16;
+                let data_addr = self.get_zero_page_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 3;
             }
             AddrMode::ZeroPageX => {
-                let data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
+                let data_addr = self.get_zero_page_x_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 4;
             }
             AddrMode::Abs => {
-                let data_addr = self.fetch_u16();
+                let data_addr = self.get_absolute_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 4;
             }
             AddrMode::AbsX => {
-                let data_addr = self.fetch_u16() + self.x as u16;
+                let data_addr = self.get_absolute_x_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 4 as u8 + (data_addr > 0x00FF) as u8;
             }
             _ => panic!("Addressing mode not supported"),
@@ -351,27 +366,23 @@ impl Cpu {
 
         match addr_mode {
             AddrMode::ZeroPage => {
-                data_addr = self.fetch_u8() as u16;
+                data_addr = self.get_zero_page_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 5;
             }
             AddrMode::ZeroPageX => {
-                data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
+                data_addr = self.get_zero_page_x_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 6;
             }
             AddrMode::Abs => {
-                data_addr = self.fetch_u16();
+                data_addr = self.get_absolute_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 6;
             }
             AddrMode::AbsX => {
-                data_addr = self.fetch_u16() + self.x as u16;
+                data_addr = self.get_absolute_x_addr();
                 data = self.memory.read_u8(data_addr);
-
                 cycles = 7;
             }
             _ => panic!("Addressing mode not supported"),
@@ -391,7 +402,6 @@ impl Cpu {
     fn ora(&mut self, addr_mode: AddrMode) -> u8 {
         let data_addr: u16;
         let data: u8;
-        let addr_addr: u16;
         let cycles;
 
         match addr_mode {
@@ -400,34 +410,32 @@ impl Cpu {
                 cycles = 2;
             }
             AddrMode::ZeroPage => {
-                data_addr = self.fetch_u8() as u16;
+                data_addr = self.get_zero_page_addr();
                 data = self.memory.read_u8(data_addr);
                 cycles = 3;
             }
             AddrMode::ZeroPageX => {
-                data_addr = (self.fetch_u8() as u16 + self.x as u16) & 0x00FF;
+                data_addr = self.get_zero_page_x_addr();
                 data = self.memory.read_u8(data_addr);
                 cycles = 4;
             }
             AddrMode::Abs => {
-                data_addr = self.fetch_u16();
+                data_addr = self.get_absolute_addr();
                 data = self.memory.read_u8(data_addr);
                 cycles = 4;
             }
             AddrMode::AbsX => {
-                data_addr = self.fetch_u16() + self.x as u16;
+                data_addr = self.get_absolute_x_addr();
                 data = self.memory.read_u8(data_addr);
                 cycles = 4 as u8 + (data_addr > 0x00FF) as u8
             }
             AddrMode::IndX => {
-                addr_addr = (self.fetch_u8() as u16 + self.x as u16) & 0xFF;
-                data_addr = self.memory.read_u16(addr_addr);
+                data_addr = self.get_indirect_x_addr();
                 data = self.memory.read_u8(data_addr);
                 cycles = 6;
             }
             AddrMode::IndY => {
-                addr_addr = self.fetch_u8() as u16;
-                data_addr = addr_addr + self.y as u16;
+                data_addr = self.get_indirect_y_addr();
                 data = self.memory.read_u8(data_addr);
                 cycles = 5 as u8 + (data_addr > 0xFF) as u8
             }
@@ -578,4 +586,46 @@ impl Cpu {
 
         2
     }
+
+    fn sta(&mut self, addr_mode: AddrMode) -> u8 {
+        let data_addr: u16;
+        let cycles: u8;
+
+        match addr_mode {
+            AddrMode::ZeroPage => {
+                data_addr = self.get_zero_page_addr();
+                cycles = 3;
+            }
+            AddrMode::ZeroPageX => {
+                data_addr = self.get_zero_page_x_addr();
+                cycles = 4;
+            }
+            AddrMode::Abs => {
+                data_addr = self.get_absolute_addr();
+                cycles = 4;
+            }
+            AddrMode::AbsX => {
+                data_addr = self.get_absolute_x_addr();
+                cycles = 5;
+            }
+            AddrMode::AbsY => {
+                data_addr = self.get_absolute_y_addr();
+                cycles = 5;
+            }
+            AddrMode::IndX => {
+                data_addr = self.get_indirect_x_addr();
+                cycles = 6;
+            }
+            AddrMode::IndY => {
+                data_addr = self.get_indirect_y_addr();
+                cycles = 6;
+            }
+            _ => panic!("Addressing mode not supported"),
+        }
+
+        self.memory.write_u8(data_addr, self.a);
+
+        cycles
+    }
+
 }

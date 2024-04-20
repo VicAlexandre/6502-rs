@@ -78,7 +78,7 @@ This project is licensed under the GPL-3.0 license. For more information, please
 - SEC []
 - SED []
 - SEI []
-- STA []
+- STA [X]
 - STX []
 - STY []
 - TAX []
