@@ -31,59 +31,59 @@ We welcome contributions from fellow students and enthusiasts. Please feel free 
 This project is licensed under the GPL-3.0 license. For more information, please refer to the [LICENSE](LICENSE) file.
 
 ## Implemented Instructions
-- BRK [x]
-- CLC [x]
-- CLD [x]
-- CLI [x]
-- CLV [x]
-- NOP [x]
-- INY [x]
-- INX [x]
-- LDA [x]
-- LDX [x]
-- LDY [x]
-- LSR [x]
-- ORA [x]
-- PHA [x]
-- PHP [x]
-- PLA [x]
-- ROL [x]
-- ASL [x]
-- ADC [x]
-- AND [x]
-- BCC [x]
-- BCS [x]
-- BEQ [x]
-- BIT []
-- BMI [x]
-- BNE [x]
-- BPL [x]
-- BVC [x]
-- BVS [x]
-- CMP []
-- CPX []
-- CPY []
-- DEC []
-- DEX []
-- DEY []
-- EOR []
-- INC []
-- JMP []
-- JSR []
-- LSR []
-- ROR []
-- RTI []
-- RTS []
-- SBC []
-- SEC []
-- SED []
-- SEI []
-- STA [X]
-- STX [X]
-- STY [X]
-- TAX [X]
-- TAY [X]
-- TSX [X]
-- TXA [X]
-- TXS [X]
-- TYA [X]
+- [x] ADC 
+- [x] AND 
+- [x] ASL 
+- [x] BCC 
+- [x] BCS 
+- [x] BEQ 
+- [x] BIT 
+- [x] BMI 
+- [x] BNE 
+- [x] BPL 
+- [x] BRK 
+- [x] BVC 
+- [x] BVS 
+- [x] CLC 
+- [x] CLD 
+- [x] CLI 
+- [x] CLV 
+- [ ] CMP 
+- [ ] CPX 
+- [ ] CPY 
+- [ ] DEC 
+- [ ] DEX 
+- [ ] DEY 
+- [ ] EOR 
+- [ ] INC 
+- [x] INY 
+- [x] INX 
+- [x] JMP 
+- [x] JSR 
+- [x] LDA 
+- [x] LDX 
+- [x] LDY 
+- [x] LSR 
+- [x] NOP 
+- [x] ORA 
+- [x] PHA 
+- [x] PHP 
+- [x] PLA 
+- [x] PLP
+- [x] ROL 
+- [ ] ROR 
+- [x] RTI 
+- [x] RTS 
+- [ ] SBC 
+- [ ] SEC 
+- [ ] SED 
+- [ ] SEI 
+- [X] STA 
+- [X] STX 
+- [X] STY 
+- [X] TAX 
+- [X] TAY 
+- [X] TSX 
+- [X] TXA 
+- [X] TXS 
+- [X] TYA 

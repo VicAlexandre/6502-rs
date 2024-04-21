@@ -11,28 +11,30 @@ impl Stack {
         }
     }
 
-    pub fn push_u8(&mut self, data: u8) {
+    pub fn push_byte(&mut self, data: u8) {
         self.stack[self.sp as usize] = data;
         self.sp -= 1;
     }
 
-    pub fn pop_u8(&mut self) -> u8 {
+    pub fn pop_byte(&mut self) -> u8 {
         self.sp += 1;
 
         self.stack[self.sp as usize]
     }
 
-    pub fn push_u16(&mut self, data: u16) {
+    pub fn push_word(&mut self, data: u16) {
         self.stack[self.sp as usize] = data as u8;
         self.stack[(self.sp - 1) as usize] = (data >> 8) as u8;
         self.sp -= 2;
     }
 
-    // pub fn pop_u16(&mut self) -> u16 {
-    //     self.sp += 2;
-    //     let least_significant = self.stack[(self.sp) as usize] as u16;
-    //     let most_significant = self.stack[(self.sp - 1) as usize] as u16;
+    pub fn pop_word(&mut self) -> u16 {
+        let word: u16;
 
-    //     (most_significant << 8) | least_significant
-    // }
+        word = ((self.stack[self.sp as usize] as u16) << 8)
+            | (self.stack[(self.sp + 1) as usize]) as u16;
+        self.sp += 2;
+
+        word
+    }
 }
