@@ -19,18 +19,18 @@ impl Memory {
         Memory { ram: [0; 0x10000] }
     }
 
-    pub fn read_u8(&self, addr: u16) -> u8 {
+    pub fn read_byte(&self, addr: u16) -> u8 {
         self.ram[addr as usize]
     }
 
-    pub fn read_u16(&self, addr: u16) -> u16 {
+    pub fn read_word(&self, addr: u16) -> u16 {
         // Little Endian implementation
         let least_significant = self.ram[addr as usize] as u16;
         let most_significant = self.ram[(addr + 1) as usize] as u16;
         (most_significant << 8) | least_significant
     }
 
-    pub fn write_u8(&mut self, addr: u16, data: u8) {
+    pub fn write_byte(&mut self, addr: u16, data: u8) {
         self.ram[addr as usize] = data;
     }
 
