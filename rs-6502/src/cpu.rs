@@ -6,6 +6,7 @@ use crate::{
 };
 
 const MASK_MSB: u8 = 0b10000000;
+const MASK_SIXTH_BIT: u8 = 0b01000000;
 const MASK_LSB: u8 = 0b00000001;
 
 pub struct Cpu {
@@ -166,8 +167,10 @@ impl Cpu {
             0x69 | 0x65 | 0x75 | 0x6D | 0x7D | 0x79 | 0x61 | 0x71 => self.adc(addr_mode),
             // AND immediate / zpg / zpg, x / abs / abs, x / abs, y / (ind, x) / (ind), y
             0x29 | 0x25 | 0x35 | 0x2D | 0x3D | 0x39 | 0x21 | 0x31 => self.and(addr_mode),
-            // BCC
+            // BRANCH IFS
             0x90 | 0xB0 | 0xF0 | 0x30 | 0xD0 | 0x10 | 0x50 | 0x70 => self.branch(opcode),
+            // BIT zpg / abs
+            0x24 | 0x2c => self.bit_test(addr_mode),
             _ => panic!("Instruction not implemented: {:#04X}", opcode),
         }
     }
@@ -209,6 +212,33 @@ impl Cpu {
                 cycles += 2;
             }
         }
+
+        cycles
+    }
+
+    fn bit_test(&mut self, addr_mode: AddrMode) -> u8 {
+        let cycles: u8;
+        let data: u8;
+        let data_addr: u16;
+
+        match addr_mode {
+            AddrMode::ZeroPage => {
+                data_addr = self.get_zero_page_addr();
+                cycles = 3;
+            }
+            AddrMode::Abs => {
+                data_addr = self.get_absolute_addr();
+                cycles = 4;
+            }
+            _ => panic!("Illegal opcode!"),
+        }
+
+        data = self.memory.read_u8(data_addr);
+
+        self.sr.negative = (data & MASK_MSB) != 0;
+        self.sr.overflow = (data & MASK_SIXTH_BIT) != 0;
+
+        self.sr.zero = (data & self.a) == 0;
 
         cycles
     }

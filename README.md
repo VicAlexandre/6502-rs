@@ -54,7 +54,7 @@ This project is licensed under the GPL-3.0 license. For more information, please
 - BCC [x]
 - BCS [x]
 - BEQ [x]
-- BIT []
+- BIT [x]
 - BMI [x]
 - BNE [x]
 - BPL [x]
