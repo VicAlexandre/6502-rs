@@ -204,6 +204,15 @@ impl Cpu {
             0x6A => self.ror_accumulator(),
             // ROR zpg / zpg, x / abs / abs, x
             0x66 | 0x76 | 0x6E | 0x7E => self.ror(addr_mode),
+            // SBC immediate / zpg / zpg, x / abs / abs, x / abs, y / (ind, x) / (ind), y
+            0xE9 | 0xE5 | 0xF5 | 0xED | 0xFD | 0xF9 | 0xE1 | 0xF1 => self.sbc(addr_mode),
+            // SEC
+            0x38 => self.sec(),
+            // SED
+            0xF8 => self.sed(),
+            // SEI
+            0x78 => self.sei(),
+            // Illegal instruction
             _ => panic!("Instruction not implemented: {:#04X}", opcode),
         }
     }
@@ -1266,4 +1275,74 @@ impl Cpu {
         cycles
     }
 
+    fn sbc(&mut self, addr_mode: AddrMode) -> u8 {
+        let cycles: u8;
+        let data_addr: u16;
+        let data: u8;
+        let result: u16;
+
+        match addr_mode {
+            AddrMode::Immediate => {
+                self.pc += 1;
+                data_addr = self.pc;
+                cycles = 2;
+            }
+            AddrMode::ZeroPage => {
+                data_addr = self.get_zero_page_addr();
+                cycles = 3;
+            }
+            AddrMode::ZeroPageX => {
+                data_addr = self.get_zero_page_x_addr();
+                cycles = 4;
+            }
+            AddrMode::Abs => {
+                data_addr = self.get_absolute_addr();
+                cycles = 4;
+            }
+            AddrMode::AbsX => {
+                data_addr = self.get_absolute_x_addr();
+                cycles = 4 + (data_addr > 0x00FF) as u8;
+            }
+            AddrMode::AbsY => {
+                data_addr = self.get_zero_page_y_addr();
+                cycles = 4 + (data_addr > 0x00FF) as u8;
+            }
+            AddrMode::IndX => {
+                data_addr = self.get_indirect_x_addr();
+                cycles = 6;
+            }
+            AddrMode::IndY => {
+                data_addr = self.get_indirect_y_addr();
+                cycles = 5 + (data_addr > 0x00FF) as u8;
+            }
+            _ => panic!("Adressing mode not supported"),
+        }
+
+        data = self.memory.read_byte(data_addr);
+        result = self.a as u16 - data as u16 - !(self.sr.carry as u16);
+
+        self.sr.carry = (result & 0x0100) == 0;
+        self.sr.overflow = !self.sr.carry;
+        self.set_zero_and_negative_flags(result as u8);
+
+        cycles
+    }
+
+    fn sec(&mut self) -> u8 {
+        self.sr.carry = true;
+
+        2
+    }
+
+    fn sed(&mut self) -> u8 {
+        self.sr.decimal = true;
+
+        2
+    }
+
+    fn sei(&mut self) -> u8 {
+        self.sr.interrupt_disable = true;
+
+        2
+    }
 }
