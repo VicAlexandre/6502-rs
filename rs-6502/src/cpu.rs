@@ -822,7 +822,7 @@ impl Cpu {
     }
 
     fn adc(&mut self, addr_mode: AddrMode) -> u8 {
-        let data: u8;
+        let mut data: u8;
         let cycles: u8;
 
         match addr_mode {
@@ -866,6 +866,15 @@ impl Cpu {
                 cycles = 5 + (data_addr > 0x00FF) as u8;
             }
             _ => panic!("Addressing mode not supported"),
+        }
+
+        if self.sr.decimal && (!is_bcd_valid(data) || !is_bcd_valid(self.a)) {
+            panic!("Illegal BCD operand");
+        }
+
+        if self.sr.decimal {
+            data = hex_to_dec(data);
+            self.a = hex_to_dec(self.a);
         }
 
         self.sr.carry = data as u16 + self.a as u16 + self.sr.carry as u16 > 0xFF;
@@ -1278,7 +1287,7 @@ impl Cpu {
     fn sbc(&mut self, addr_mode: AddrMode) -> u8 {
         let cycles: u8;
         let data_addr: u16;
-        let data: u8;
+        let mut data: u8;
         let result: u16;
 
         match addr_mode {
@@ -1319,6 +1328,16 @@ impl Cpu {
         }
 
         data = self.memory.read_byte(data_addr);
+
+        if self.sr.decimal && (!is_bcd_valid(data) || !is_bcd_valid(self.a)) {
+            panic!("Illegal BCD operand");
+        }
+
+        if self.sr.decimal {
+            data = hex_to_dec(data);
+            self.a = hex_to_dec(self.a);
+        }
+
         result = self.a as u16 - data as u16 - !(self.sr.carry as u16);
 
         self.sr.carry = (result & 0x0100) == 0;
@@ -1345,4 +1364,12 @@ impl Cpu {
 
         2
     }
+}
+
+fn hex_to_dec(value: u8) -> u8 {
+    10 * (value >> 4) + (value & 0x0F)
+}
+
+fn is_bcd_valid(value: u8) -> bool {
+    (value & 0xF0 >= 0xA0) || (value & 0x0F >= 0x0A)
 }
