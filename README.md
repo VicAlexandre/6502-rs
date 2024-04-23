@@ -48,14 +48,14 @@ This project is licensed under the GPL-3.0 license. For more information, please
 - [x] CLD 
 - [x] CLI 
 - [x] CLV 
-- [ ] CMP 
-- [ ] CPX 
-- [ ] CPY 
-- [ ] DEC 
-- [ ] DEX 
-- [ ] DEY 
-- [ ] EOR 
-- [ ] INC 
+- [x] CMP 
+- [x] CPX 
+- [x] CPY 
+- [x] DEC 
+- [x] DEX 
+- [x] DEY 
+- [x] EOR 
+- [x] INC 
 - [x] INY 
 - [x] INX 
 - [x] JMP 
@@ -71,7 +71,7 @@ This project is licensed under the GPL-3.0 license. For more information, please
 - [x] PLA 
 - [x] PLP
 - [x] ROL 
-- [ ] ROR 
+- [x] ROR 
 - [x] RTI 
 - [x] RTS 
 - [ ] SBC 
