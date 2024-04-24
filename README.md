@@ -74,10 +74,10 @@ This project is licensed under the GPL-3.0 license. For more information, please
 - [x] ROR 
 - [x] RTI 
 - [x] RTS 
-- [ ] SBC 
-- [ ] SEC 
-- [ ] SED 
-- [ ] SEI 
+- [x] SBC 
+- [x] SEC 
+- [x] SED 
+- [x] SEI 
 - [X] STA 
 - [X] STX 
 - [X] STY 

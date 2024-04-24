@@ -873,13 +873,13 @@ impl Cpu {
         }
 
         if self.sr.decimal {
-            data = hex_to_dec(data);
-            self.a = hex_to_dec(self.a);
+            data = hex_as_dec(data);
+            self.a = hex_as_dec(self.a);
         }
 
         self.sr.carry = data as u16 + self.a as u16 + self.sr.carry as u16 > 0xFF;
         self.sr.overflow = data as u16 + self.a as u16 + self.sr.carry as u16 > 0xFF;
-        self.a += data + self.sr.carry as u8;
+        self.a = dec_as_hex(self.a + data + self.sr.carry as u8);
 
         cycles
     }
@@ -1334,8 +1334,8 @@ impl Cpu {
         }
 
         if self.sr.decimal {
-            data = hex_to_dec(data);
-            self.a = hex_to_dec(self.a);
+            data = hex_as_dec(data);
+            self.a = hex_as_dec(self.a);
         }
 
         result = self.a as u16 - data as u16 - !(self.sr.carry as u16);
@@ -1343,6 +1343,8 @@ impl Cpu {
         self.sr.carry = (result & 0x0100) == 0;
         self.sr.overflow = !self.sr.carry;
         self.set_zero_and_negative_flags(result as u8);
+
+        self.memory.write_byte(data_addr, dec_as_hex(result as u8));
 
         cycles
     }
@@ -1366,8 +1368,12 @@ impl Cpu {
     }
 }
 
-fn hex_to_dec(value: u8) -> u8 {
+fn hex_as_dec(value: u8) -> u8 {
     10 * (value >> 4) + (value & 0x0F)
+}
+
+fn dec_as_hex(value: u8) -> u8 {
+    16 * (value / 10) + (value % 10)
 }
 
 fn is_bcd_valid(value: u8) -> bool {
