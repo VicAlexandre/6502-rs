@@ -310,7 +310,7 @@ impl Cpu {
     }
 
     fn inc_y(&mut self) -> u8 {
-        self.y += 1;
+        self.y = self.y.wrapping_add(1);
 
         self.set_zero_and_negative_flags(self.y);
 
@@ -318,7 +318,7 @@ impl Cpu {
     }
 
     fn inc_x(&mut self) -> u8 {
-        self.x += 1;
+        self.x = self.x.wrapping_add(1);
 
         self.set_zero_and_negative_flags(self.x);
 
@@ -883,7 +883,7 @@ impl Cpu {
 
         self.sr.carry = data as u16 + self.a as u16 + self.sr.carry as u16 > 0xFF;
         self.sr.overflow = data as u16 + self.a as u16 + self.sr.carry as u16 > 0xFF;
-        self.a = dec_as_hex(self.a + data + self.sr.carry as u8);
+        self.a = dec_as_hex(self.a.wrapping_add(data).wrapping_add(self.sr.carry as u8));
 
         cycles
     }
@@ -1030,7 +1030,7 @@ impl Cpu {
         }
 
         self.sr.carry = self.a >= data;
-        self.set_zero_and_negative_flags(self.a - data);
+        self.set_zero_and_negative_flags(self.a.wrapping_sub(data));
 
         cycles
     }
@@ -1058,7 +1058,7 @@ impl Cpu {
         }
 
         self.sr.carry = self.x >= data;
-        self.set_zero_and_negative_flags(self.x - data);
+        self.set_zero_and_negative_flags(self.x.wrapping_sub(data));
 
         cycles
     }
@@ -1086,7 +1086,7 @@ impl Cpu {
         }
 
         self.sr.carry = self.y >= data;
-        self.set_zero_and_negative_flags(self.y - data);
+        self.set_zero_and_negative_flags(self.y.wrapping_sub(data));
 
         cycles
     }
@@ -1120,7 +1120,7 @@ impl Cpu {
             _ => panic!("Addressing mode not supported"),
         }
 
-        data = data - 1;
+        data = data.wrapping_sub(1);
         self.set_zero_and_negative_flags(data);
         self.memory.write_byte(data_addr, data);
 
@@ -1128,14 +1128,14 @@ impl Cpu {
     }
 
     fn dex(&mut self) -> u8 {
-        self.x = self.x - 1;
+        self.x = self.x.wrapping_sub(1);
         self.set_zero_and_negative_flags(self.x);
 
         2
     }
 
     fn dey(&mut self) -> u8 {
-        self.y = self.y - 1;
+        self.y = self.y.wrapping_sub(1);
         self.set_zero_and_negative_flags(self.y);
 
         2
@@ -1224,7 +1224,7 @@ impl Cpu {
             _ => panic!("Addressing mode not supported"),
         }
 
-        data = data + 1;
+        data = data.wrapping_add(1);
         self.set_zero_and_negative_flags(data);
         self.memory.write_byte(data_addr, data);
 
@@ -1342,7 +1342,7 @@ impl Cpu {
             self.a = hex_as_dec(self.a);
         }
 
-        result = self.a as u16 - data as u16 - !(self.sr.carry as u16);
+        result = (self.a as u16).wrapping_sub(data as u16).wrapping_sub(!(self.sr.carry as u16));
 
         self.sr.carry = (result & 0x0100) == 0;
         self.sr.overflow = !self.sr.carry;
