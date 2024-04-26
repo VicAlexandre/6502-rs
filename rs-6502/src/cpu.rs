@@ -312,11 +312,15 @@ impl Cpu {
     fn inc_y(&mut self) -> u8 {
         self.y += 1;
 
+        self.set_zero_and_negative_flags(self.y);
+
         2
     }
 
     fn inc_x(&mut self) -> u8 {
         self.x += 1;
+
+        self.set_zero_and_negative_flags(self.x);
 
         2
     }
