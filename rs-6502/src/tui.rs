@@ -13,17 +13,17 @@ pub type Tui = Terminal<CrosstermBackend<Stdout>>;
 
 pub struct App {
     cpu: Cpu,
-    cycles: u32,
     exit: bool,
     previous_state: Option<CpuState>,
     current_state: Option<CpuState>,
+    memory: Option<Vec<u8>>,
 }
 
 impl App {
     pub fn new(cpu: Cpu) -> App {
         let curr = CpuState::new(&cpu);
 
-        App { cpu, cycles: 0, exit: false, previous_state: None, current_state: Some(curr)}
+        App { cpu, exit: false, previous_state: None, current_state: Some(curr), memory: None}
     }
 
     pub fn run(&mut self, terminal: &mut Tui) -> io::Result<()> {
@@ -128,8 +128,21 @@ impl App {
 
     fn execute_instruction(&mut self) {
         self.previous_state = self.current_state.take();
-        self.cycles += self.cpu.execute() as u32;
-        self.current_state = Some(CpuState::new(&self.cpu));
+
+        let cycles_used = self.cpu.execute() as u32;
+        let mut new_state = CpuState::new(&self.cpu);
+        new_state.cycles = self.previous_state.as_ref().unwrap().cycles + cycles_used;
+
+        self.current_state = Some(new_state);
+        self.memory = Some(self.get_memory_vector());
+    }
+
+    fn get_memory_vector(&self) -> Vec<u8> {
+        let mut memory = vec![0; 0x10000];
+        for (i, byte) in self.cpu.memory.get_ram().iter().enumerate() {
+            memory[i] = *byte;
+        }
+        memory
     }
 }
 

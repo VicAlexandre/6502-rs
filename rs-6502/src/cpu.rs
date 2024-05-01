@@ -24,6 +24,8 @@ pub struct CpuState {
     pub interrupt_disable: bool,
     pub zero: bool,
     pub carry: bool,
+    pub cycles: u32,
+    pub next_instruction: u8,
 }
 
 impl CpuState {
@@ -41,6 +43,8 @@ impl CpuState {
             interrupt_disable: cpu.sr.get_interrupt_disable(),
             zero: cpu.sr.get_zero(),
             carry: cpu.sr.get_carry(),
+            cycles: 0,
+            next_instruction: cpu.memory.read_byte(cpu.pc),
         }
     }
 }
@@ -50,7 +54,13 @@ impl fmt::Display for CpuState {
         write!(f, "######## REGISTER BANK ########\n
 A: 0x{:02X} | X: 0x{:02X} | Y: 0x{:02X} | PC: 0x{:04X} | SP: 0x{:02X}\n
 ######## STATUS REGISTER FLAGS ########\n
-N: {} || O: {} || B: {} || D: {} || I: {} || Z: {} || C: {}", self.a, self.x, self.y, self.pc, self.sp, self.negative as u8, self.overflow as u8, self.brk as u8, self.decimal as u8, self.interrupt_disable as u8, self.zero as u8, self.carry as u8)
+N: {} || O: {} || B: {} || D: {} || I: {} || Z: {} || C: {}\n
+Cycles used: {}\nNext instruction: 0x{:02X}",
+        self.a, self.x, self.y, self.pc,
+        self.sp, self.negative as u8, self.overflow as u8,
+        self.brk as u8, self.decimal as u8, self.interrupt_disable as u8,
+        self.zero as u8, self.carry as u8, self.cycles,
+        self.next_instruction)
     }
 }
 
