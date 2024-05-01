@@ -1,3 +1,5 @@
+use std::fmt;
+
 use crate::{
     addressing_mode::{get_addr_mode, AddrMode},
     memory::Memory,
@@ -8,6 +10,49 @@ use crate::{
 const MASK_MSB: u8 = 0b10000000;
 const MASK_SIXTH_BIT: u8 = 0b01000000;
 const MASK_LSB: u8 = 0b00000001;
+
+pub struct CpuState {
+    pub a: u8,
+    pub x: u8,
+    pub y: u8,
+    pub sp: u8,
+    pub pc: u16,
+    pub negative: bool,
+    pub overflow: bool,
+    pub brk: bool,
+    pub decimal: bool,
+    pub interrupt_disable: bool,
+    pub zero: bool,
+    pub carry: bool,
+}
+
+impl CpuState {
+    pub fn new(cpu: &Cpu) -> CpuState {
+        CpuState {
+            a: cpu.a,
+            x: cpu.x,
+            y: cpu.y,
+            pc: cpu.pc,
+            sp: cpu.stack.get_sp(),
+            negative: cpu.sr.get_negative(),
+            overflow: cpu.sr.get_overflow(),
+            brk: cpu.sr.get_brk(),
+            decimal: cpu.sr.get_decimal(),
+            interrupt_disable: cpu.sr.get_interrupt_disable(),
+            zero: cpu.sr.get_zero(),
+            carry: cpu.sr.get_carry(),
+        }
+    }
+}
+
+impl fmt::Display for CpuState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "######## REGISTER BANK ########\n
+A: 0x{:02X} | X: 0x{:02X} | Y: 0x{:02X} | PC: 0x{:04X} | SP: 0x{:02X}\n
+######## STATUS REGISTER FLAGS ########\n
+N: {} || O: {} || B: {} || D: {} || I: {} || Z: {} || C: {}", self.a, self.x, self.y, self.pc, self.sp, self.negative as u8, self.overflow as u8, self.brk as u8, self.decimal as u8, self.interrupt_disable as u8, self.zero as u8, self.carry as u8)
+    }
+}
 
 pub struct Cpu {
     pub a: u8,
@@ -42,19 +87,6 @@ impl Cpu {
         let instruction = self.memory.read_word(self.pc);
         self.pc += 2;
         instruction
-    }
-
-    pub fn status(&self) {
-        print!("A: {:#04X}\t", self.a);
-        print!("X: {:#04X}\t", self.x);
-        print!("Y: {:#04X}\t", self.y);
-        print!("PC: {:#06X}\t", self.pc);
-        print!("SP: {:#04X}\n", self.stack.sp);
-        self.sr.status();
-        println!(
-            "Next instruction opcode: {:#04X}",
-            self.memory.read_byte(self.pc)
-        );
     }
 
     fn set_zero_and_negative_flags(&mut self, data: u8) {

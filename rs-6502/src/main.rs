@@ -1,39 +1,28 @@
-use crate::cpu::Cpu;
-use std::env;
+use crate::{cpu::Cpu, tui::App};
+use std::{env, io};
 
 mod addressing_mode;
 mod cpu;
 mod memory;
 mod stack;
 mod status_register;
+mod tui;
 
-fn main() {
-    println!("# RS-6502 Emulator #");
-
-    let mut cpu = Cpu::new();
-    let mut cycles: u32 = 0;
-
+fn main() -> io::Result<()> {
     if env::args().len() < 2 {
         println!("Usage: cargo run <path-to-rom>");
-        return;
+        panic!("No ROM file specified")
     }
-
+    
+    let mut cpu = Cpu::new();
     let rom_path = env::args().nth(1).unwrap();
     let rom = std::fs::read(rom_path).unwrap();
 
     cpu.memory.load(rom);
-    print!("{}", cpu.memory);
 
-    cpu.status();
-    println!("Press Enter to continue...");
-    std::io::stdin().read_line(&mut String::new()).unwrap();
-    loop {
-        cycles += cpu.execute() as u32;
-        println!("Cycles: {}", cycles);
-        cpu.status();
+    let mut terminal = tui::init()?;
+    let app_result = App::new(cpu).run(&mut terminal);
+    tui::restore()?;
 
-        // wait for a key press
-        println!("Press Enter to continue...");
-        std::io::stdin().read_line(&mut String::new()).unwrap();
-    }
+    app_result
 }

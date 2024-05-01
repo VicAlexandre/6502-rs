@@ -37,4 +37,8 @@ impl Stack {
 
         word
     }
+
+    pub fn get_sp(&self) -> u8 {
+        self.sp 
+    }
 }

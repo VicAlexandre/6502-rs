@@ -9,7 +9,6 @@ pub struct StatusRegister {
 }
 
 impl StatusRegister {
-    #![allow(unused)]
     pub fn new() -> StatusRegister {
         StatusRegister {
             negative: false,
@@ -20,16 +19,6 @@ impl StatusRegister {
             zero: false,
             carry: false,
         }
-    }
-
-    pub fn status(&self) {
-        print!("N: {}\t", self.negative as u8);
-        print!("V: {}\t", self.overflow as u8);
-        print!("B: {}\t", self.brk as u8);
-        print!("D: {}\t", self.decimal as u8);
-        print!("I: {}\t", self.interrupt_disable as u8);
-        print!("Z: {}\t", self.zero as u8);
-        print!("C: {}\n", self.carry as u8);
     }
 
     pub fn get_status_byte(&self) -> u8 {
@@ -53,5 +42,33 @@ impl StatusRegister {
         self.interrupt_disable = (status_byte & 0b00000100) != 0;
         self.zero = (status_byte & 0b00000010) != 0;
         self.carry = (status_byte & 0b00000001) != 0;
+    }
+
+    pub fn get_negative(&self) -> bool {
+        self.negative
+    }
+
+    pub fn get_overflow(&self) -> bool {
+        self.overflow
+    }
+
+    pub fn get_brk(&self) -> bool {
+        self.brk
+    }
+
+    pub fn get_decimal(&self) -> bool {
+        self.decimal
+    }
+
+    pub fn get_interrupt_disable(&self) -> bool {
+        self.interrupt_disable
+    }
+
+    pub fn get_zero(&self) -> bool {
+        self.zero
+    }
+
+    pub fn get_carry(&self) -> bool {
+        self.carry
     }
 }
