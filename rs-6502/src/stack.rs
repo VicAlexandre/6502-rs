@@ -41,4 +41,10 @@ impl Stack {
     pub fn get_sp(&self) -> u8 {
         self.sp 
     }
+
+    pub fn get_stack(&self) -> Vec<u8> {
+        let stack_vec = self.stack.to_vec();
+
+        stack_vec
+    }
 }

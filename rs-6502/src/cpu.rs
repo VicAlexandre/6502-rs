@@ -51,16 +51,27 @@ impl CpuState {
 
 impl fmt::Display for CpuState {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "######## REGISTER BANK ########\n
+        write!(
+            f,
+            "######## REGISTER BANK ########\n
 A: 0x{:02X} | X: 0x{:02X} | Y: 0x{:02X} | PC: 0x{:04X} | SP: 0x{:02X}\n
 ######## STATUS REGISTER FLAGS ########\n
 N: {} || O: {} || B: {} || D: {} || I: {} || Z: {} || C: {}\n
-Cycles used: {}\nNext instruction: 0x{:02X}",
-        self.a, self.x, self.y, self.pc,
-        self.sp, self.negative as u8, self.overflow as u8,
-        self.brk as u8, self.decimal as u8, self.interrupt_disable as u8,
-        self.zero as u8, self.carry as u8, self.cycles,
-        self.next_instruction)
+Cycles used: {}\n",
+            self.a,
+            self.x,
+            self.y,
+            self.pc,
+            self.sp,
+            self.negative as u8,
+            self.overflow as u8,
+            self.brk as u8,
+            self.decimal as u8,
+            self.interrupt_disable as u8,
+            self.zero as u8,
+            self.carry as u8,
+            self.cycles,
+        )
     }
 }
 
@@ -1384,7 +1395,9 @@ impl Cpu {
             self.a = hex_as_dec(self.a);
         }
 
-        result = (self.a as u16).wrapping_sub(data as u16).wrapping_sub(!(self.sr.carry as u16));
+        result = (self.a as u16)
+            .wrapping_sub(data as u16)
+            .wrapping_sub(!(self.sr.carry as u16));
 
         self.sr.carry = (result & 0x0100) == 0;
         self.sr.overflow = !self.sr.carry;

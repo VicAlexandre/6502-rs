@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{fmt, vec};
 
 pub struct Memory {
     ram: [u8; 0x10000], // 64KB
@@ -40,7 +40,17 @@ impl Memory {
         }
     }
 
-    pub fn get_ram(&self) -> Vec<u8> {
-        self.ram.to_vec()
+    pub fn get_ram(&self, first_index: usize, mut size: usize) -> Vec<u8> {
+        if first_index as u32 + size as u32 > 0x10000 {
+            let new_size = 0x10000 - first_index;
+            size = new_size;
+        }
+
+        let mut ram_vec = vec![0; size];
+        for i in 0..size {
+            ram_vec[i] = self.ram[first_index + i];
+        }
+
+        ram_vec
     }
 }
