@@ -15,13 +15,14 @@ impl Instruction {
         let next_instruction = cpu.memory.read_byte(cpu.pc);
         let name_and_desc = instruction_name_and_description(next_instruction);
         let addr_mode = addr_mode_str(get_addr_mode(next_instruction));
+        let assembly = disassemble(cpu, name_and_desc.0, &addr_mode);
 
         Instruction {
             name: name_and_desc.0,
             description: name_and_desc.1,
             opcode: next_instruction,
-            addr_mode,
-            assembly: name_and_desc.0.to_string()
+            addr_mode: addr_mode,
+            assembly: assembly
         }
     }
 }
@@ -115,4 +116,59 @@ fn addr_mode_str(addr_mode: AddrMode) -> String {
         AddrMode::ZeroPageY => "ZPG, Y",
     }
     .to_string()
+}
+
+fn disassemble(cpu: &Cpu, operation_name: &str, addr_mode: &String) -> String {
+    let assembly = String::from(operation_name);
+
+    match addr_mode.as_str() {
+        "Abs" => {
+            let lo = cpu.memory.read_byte(cpu.pc + 1);
+            let hi = cpu.memory.read_byte(cpu.pc + 2);
+            format!("{} ${:02X}{:02X}", assembly, hi, lo)
+        }
+        "Abs, X" => {
+            let lo = cpu.memory.read_byte(cpu.pc + 1);
+            let hi = cpu.memory.read_byte(cpu.pc + 2);
+            format!("{} ${:02X}{:02X}, X", assembly, hi, lo)
+        }
+        "Abs, Y" => {
+            let lo = cpu.memory.read_byte(cpu.pc + 1);
+            let hi = cpu.memory.read_byte(cpu.pc + 2);
+            format!("{} ${:02X}{:02X}, Y", assembly, hi, lo)
+        }
+        "Acc" => format!("{}", assembly),
+        "Imm" => {
+            let value = cpu.memory.read_byte(cpu.pc + 1);
+            format!("{} #${:02X}", assembly, value)
+        }
+        "Implied" => format!("{}", assembly),
+        "Indirect" => {
+            let lo = cpu.memory.read_byte(cpu.pc + 1);
+            let hi = cpu.memory.read_byte(cpu.pc + 2);
+            format!("{} (${:02X}{:02X})", assembly, hi, lo)
+        }
+        "Idx Indirect" => {
+            let value = cpu.memory.read_byte(cpu.pc + 1);
+            format!("{} (${:02X}, X)", assembly, value)
+        }
+        "Indirect Idx" => {
+            let value = cpu.memory.read_byte(cpu.pc + 1);
+            format!("{} (${:02X}), Y", assembly, value)
+        }
+        "Relative" => {
+            let offset = cpu.memory.read_byte(cpu.pc + 1);
+            let target = cpu.pc.wrapping_add(2).wrapping_add(offset as u16);
+            format!("{} ${:04X}", assembly, target)
+        }
+        "ZPG" => {
+            let value = cpu.memory.read_byte(cpu.pc + 1);
+            format!("{} ${:02X}", assembly, value)
+        }
+        "ZPG, X" => {
+            let value = cpu.memory.read_byte(cpu.pc + 1);
+            format!("{} ${:02X}, X", assembly, value)
+        }
+        _ => panic!("Addressing mode not implemented: {}", addr_mode),
+    }
 }
