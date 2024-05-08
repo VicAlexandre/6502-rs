@@ -32,7 +32,7 @@ pub enum AddrMode {
 
 pub fn get_addr_mode(opcode: u8) -> AddrMode {
     let lo_nibble = opcode & 0x0F;
-    let hi_nibble = opcode & 0xF0;
+    let hi_nibble = (opcode & 0xF0) >> 4;
 
     match lo_nibble {
         0x00 => {
@@ -43,13 +43,13 @@ pub fn get_addr_mode(opcode: u8) -> AddrMode {
                 )
             }
 
-            if hi_nibble == 0x00 || hi_nibble == 0x40 || hi_nibble == 0x60 {
+            if hi_nibble == 0x00 || hi_nibble == 0x04 || hi_nibble == 0x06 {
                 AddrMode::Impl
             } else if hi_nibble % 2 == 1 {
                 AddrMode::Rel
-            } else if hi_nibble == 0xA0 || hi_nibble == 0xC0 || hi_nibble == 0xE0 {
+            } else if hi_nibble == 0x0A || hi_nibble == 0x0C || hi_nibble == 0x0E {
                 AddrMode::Immediate
-            } else if hi_nibble == 0x20 {
+            } else if hi_nibble == 0x02 {
                 AddrMode::Abs
             } else {
                 panic!(
@@ -66,7 +66,7 @@ pub fn get_addr_mode(opcode: u8) -> AddrMode {
             }
         }
         0x02 => {
-            if hi_nibble == 0xA0 {
+            if hi_nibble == 0x0A {
                 AddrMode::Immediate
             } else {
                 panic!(
@@ -76,9 +76,9 @@ pub fn get_addr_mode(opcode: u8) -> AddrMode {
             }
         }
         0x04 => {
-            if hi_nibble == 0x20 || (hi_nibble >= 8 && hi_nibble % 2 == 0) {
+            if hi_nibble == 0x02 || (hi_nibble >= 8 && hi_nibble % 2 == 0) {
                 AddrMode::ZeroPage
-            } else if hi_nibble == 0x90 || hi_nibble == 0xB0 {
+            } else if hi_nibble == 0x09 || hi_nibble == 0x0B {
                 AddrMode::ZeroPageX
             } else {
                 panic!(
@@ -97,7 +97,7 @@ pub fn get_addr_mode(opcode: u8) -> AddrMode {
         0x06 => {
             if hi_nibble % 2 == 0 {
                 AddrMode::ZeroPage
-            } else if hi_nibble == 0x90 || hi_nibble == 0xB0 {
+            } else if hi_nibble == 0x09 || hi_nibble == 0x0B {
                 AddrMode::ZeroPageY
             } else {
                 AddrMode::ZeroPageX
@@ -105,7 +105,7 @@ pub fn get_addr_mode(opcode: u8) -> AddrMode {
         }
         0x08 => AddrMode::Impl,
         0x09 => {
-            if hi_nibble == 0x80 {
+            if hi_nibble == 0x08 {
                 panic!(
                     "Illegal opcode, no addressing mode available: {:#04X}",
                     opcode
@@ -117,9 +117,9 @@ pub fn get_addr_mode(opcode: u8) -> AddrMode {
             }
         }
         0x0A => {
-            if hi_nibble <= 0x60 && hi_nibble % 2 == 0 {
+            if hi_nibble <= 0x06 && hi_nibble % 2 == 0 {
                 AddrMode::Accumulator
-            } else if (hi_nibble >= 0x80 && hi_nibble <= 0xC0) || hi_nibble == 0xE0 {
+            } else if (hi_nibble >= 0x08 && hi_nibble <= 0x0C) || hi_nibble == 0x0E {
                 AddrMode::Impl
             } else {
                 panic!(
@@ -129,11 +129,11 @@ pub fn get_addr_mode(opcode: u8) -> AddrMode {
             }
         }
         0x0C => {
-            if hi_nibble != 0x00 && hi_nibble != 0x60 && hi_nibble % 2 == 0 {
+            if hi_nibble != 0x00 && hi_nibble != 0x06 && hi_nibble % 2 == 0 {
                 AddrMode::Abs
-            } else if hi_nibble == 0x60 {
+            } else if hi_nibble == 0x06 {
                 AddrMode::Ind
-            } else if hi_nibble == 0xB0 {
+            } else if hi_nibble == 0x0B {
                 AddrMode::AbsX
             } else {
                 panic!(
@@ -152,9 +152,9 @@ pub fn get_addr_mode(opcode: u8) -> AddrMode {
         0x0E => {
             if hi_nibble % 2 == 0 {
                 AddrMode::Abs
-            } else if hi_nibble == 0xB0 {
+            } else if hi_nibble == 0x0B {
                 AddrMode::AbsY
-            } else if hi_nibble == 0x90 {
+            } else if hi_nibble == 0x09 {
                 panic!(
                     "Illegal opcode, no addressing mode available: {:#04X}",
                     opcode

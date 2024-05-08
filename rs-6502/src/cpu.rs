@@ -880,6 +880,7 @@ impl Cpu {
 
     fn adc(&mut self, addr_mode: AddrMode) -> u8 {
         let mut data: u8;
+        let mut temp_result: u8;
         let cycles: u8;
 
         match addr_mode {
@@ -934,9 +935,14 @@ impl Cpu {
             self.a = hex_as_dec(self.a);
         }
 
+        temp_result = self.a.wrapping_add(data).wrapping_add(self.sr.carry as u8);
+        if self.sr.decimal {
+            temp_result = dec_as_hex(temp_result);
+        }
+
         self.sr.carry = data as u16 + self.a as u16 + self.sr.carry as u16 > 0xFF;
         self.sr.overflow = data as u16 + self.a as u16 + self.sr.carry as u16 > 0xFF;
-        self.a = dec_as_hex(self.a.wrapping_add(data).wrapping_add(self.sr.carry as u8));
+        self.a = temp_result;
 
         cycles
     }
@@ -1436,5 +1442,5 @@ fn dec_as_hex(value: u8) -> u8 {
 }
 
 fn is_bcd_valid(value: u8) -> bool {
-    (value & 0xF0 >= 0xA0) || (value & 0x0F >= 0x0A)
+    ((value >> 4) <= 0x09) && ((value & 0x0F) <= 0x09)
 }

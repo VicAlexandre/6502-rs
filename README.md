@@ -86,14 +86,14 @@ We welcome contributions from fellow students and enthusiasts. Please feel free 
 | BVC         | 50     | rel             | ✅          |        |
 | CLI         | 58     | impl            | ✅          |        |
 | RTS         | 60     | impl            | ✅          |        |
-| ADC         | 61     | X,ind           | ✅          |        |
-| ADC         | 65     | zpg             | ✅          |        |
-| ADC         | 69     | #               | ✅          |        |
-| ADC         | 6D     | abs             | ✅          |        |
-| ADC         | 71     | ind,Y           | ✅          |        |
-| ADC         | 75     | zpg,X           | ✅          |        |
-| ADC         | 79     | abs,Y           | ✅          |        |
-| ADC         | 7D     | abs,X           | ✅          |        |
+| ADC         | 61     | X,ind           | ✅          | ✅        |
+| ADC         | 65     | zpg             | ✅          | ✅     |
+| ADC         | 69     | #               | ✅          | ✅     |
+| ADC         | 6D     | abs             | ✅          | ✅        |
+| ADC         | 71     | ind,Y           | ✅          | ✅        |
+| ADC         | 75     | zpg,X           | ✅          | ✅       |
+| ADC         | 79     | abs,Y           | ✅          | ✅        |
+| ADC         | 7D     | abs,X           | ✅          | ✅        |
 | ROR         | 6A     | impl            | ✅          |        |
 | ROR         | 66     | zpg             | ✅          |        |
 | ROR         | 6E     | abs             | ✅          |        |
@@ -132,7 +132,7 @@ We welcome contributions from fellow students and enthusiasts. Please feel free 
 | LDA         | B5     | zpg,X           | ✅          |        |
 | LDA         | B9     | abs,Y           | ✅          |        |
 | LDA         | BD     | abs,X           | ✅          |        |
-| LDX         | A2     | #               | ✅          |        |
+| LDX         | A2     | #               | ✅          | ✅     |
 | LDX         | A6     | zpg             | ✅          |        |
 | LDX         | AE     | abs             | ✅          |        |
 | LDX         | B6     | zpg,Y           | ✅          |        |
