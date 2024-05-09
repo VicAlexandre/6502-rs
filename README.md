@@ -18,9 +18,9 @@ This emulator aims to accurately simulate the operation of the 6502 microprocess
 
 ## Roadmap
 
-- **Instructions**: Currently being implemented. The core instruction set of the 6502 is under development, with the aim to cover all official opcodes and behaviors.
+- **Instructions**: Implemented. The core instruction set of the 6502 is under development, with the aim to cover all official opcodes and behaviors.
 
-- **TUI (Text-based User Interface)**: Planned feature. A real-time interface that will display and update the current status of the processor with each execution step. This will enhance the usability for educational purposes and debugging.
+- **TUI (Text-based User Interface)**: Implemented. A real-time interface that will display and update the current status of the processor with each execution step. This will enhance the usability for educational purposes and debugging.
 
 - **Testing**: Currently in progress.
 
@@ -42,7 +42,7 @@ We welcome contributions from fellow students and enthusiasts. Please feel free 
 | ASL         | 0A     | impl            | ✅          |   ✅     |
 | ASL         | 06     | zpg             | ✅          |   ✅     |
 | ASL         | 0E     | abs             | ✅          |     ✅   |
-| ASL         | 16     | zpg,X           | ✅          |       ✅ |
+| ASL         | 16     | zpg,X           | ✅          |   ✅     |
 | ASL         | 1E     | abs,X           | ✅          |  ✅      |
 | PHP         | 08     | impl            | ✅          |   ✅     |
 | BPL         | 10     | rel             | ✅          |   ✅     |
@@ -52,48 +52,48 @@ We welcome contributions from fellow students and enthusiasts. Please feel free 
 | AND         | 25     | zpg             | ✅          | ✅        |
 | AND         | 29     | #               | ✅          | ✅        |
 | AND         | 2D     | abs             | ✅          | ✅        |
-| AND         | 31     | ind,Y           | ✅          | ✅        |
-| AND         | 35     | zpg,X           | ✅          | ✅        |
-| AND         | 39     | abs,Y           | ✅          | ✅        |
-| AND         | 3D     | abs,X           | ✅          | ✅        |
-| BIT         | 24     | zpg             | ✅          |        |
-| BIT         | 2C     | abs             | ✅          |        |
-| ROL         | 2A     | impl            | ✅          |        |
-| ROL         | 26     | zpg             | ✅          |        |
-| ROL         | 2E     | abs             | ✅          |        |
-| ROL         | 36     | zpg,X           | ✅          |        |
-| ROL         | 3E     | abs,X           | ✅          |        |
-| PLP         | 28     | impl            | ✅          |        |
-| BMI         | 30     | rel             | ✅          |        |
-| SEC         | 38     | impl            | ✅          |  ✅      |
+| AND         | 31     | ind,Y           | ✅          | ✅      |
+| AND         | 35     | zpg,X           | ✅          | ✅      |
+| AND         | 39     | abs,Y           | ✅          | ✅      |
+| AND         | 3D     | abs,X           | ✅          | ✅      |
+| BIT         | 24     | zpg             | ✅          | ✅     |
+| BIT         | 2C     | abs             | ✅          | ✅     |
+| ROL         | 2A     | impl            | ✅          | ✅     |
+| ROL         | 26     | zpg             | ✅          | ✅     |
+| ROL         | 2E     | abs             | ✅          | ✅     |
+| ROL         | 36     | zpg,X           | ✅          | ✅     |
+| ROL         | 3E     | abs,X           | ✅          | ✅     |
+| PLP         | 28     | impl            | ✅          | ✅     |
+| BMI         | 30     | rel             | ✅          | ✅     |
+| SEC         | 38     | impl            | ✅          |  ✅    |
 | RTI         | 40     | impl            | ✅          |        |
-| EOR         | 41     | X,ind           | ✅          |        |
-| EOR         | 45     | zpg             | ✅          |        |
-| EOR         | 49     | #               | ✅          |        |
-| EOR         | 4D     | abs             | ✅          |        |
-| EOR         | 51     | ind,Y           | ✅          |        |
-| EOR         | 55     | zpg,X           | ✅          |        |
-| EOR         | 59     | abs,Y           | ✅          |        |
-| EOR         | 5D     | abs,X           | ✅          |        |
-| LSR         | 4A     | impl            | ✅          |        |
-| LSR         | 46     | zpg             | ✅          |        |
-| LSR         | 4E     | abs             | ✅          |        |
-| LSR         | 56     | zpg,X           | ✅          |        |
-| LSR         | 5E     | abs,X           | ✅          |        |
-| PHA         | 48     | impl            | ✅          |        |
-| JMP         | 4C     | abs             | ✅          |        |
-| JMP         | 6C     | ind             | ✅          |        |
-| BVC         | 50     | rel             | ✅          |        |
-| CLI         | 58     | impl            | ✅          |        |
-| RTS         | 60     | impl            | ✅          |        |
-| ADC         | 61     | X,ind           | ✅          | ✅        |
-| ADC         | 65     | zpg             | ✅          | ✅     |
-| ADC         | 69     | #               | ✅          | ✅     |
-| ADC         | 6D     | abs             | ✅          | ✅        |
-| ADC         | 71     | ind,Y           | ✅          | ✅        |
-| ADC         | 75     | zpg,X           | ✅          | ✅       |
-| ADC         | 79     | abs,Y           | ✅          | ✅        |
-| ADC         | 7D     | abs,X           | ✅          | ✅        |
+| EOR         | 41     | X,ind           | ✅          | ✅     |
+| EOR         | 45     | zpg             | ✅          | ✅     |
+| EOR         | 49     | #               | ✅          | ✅     |
+| EOR         | 4D     | abs             | ✅          | ✅     |
+| EOR         | 51     | ind,Y           | ✅          | ✅     |
+| EOR         | 55     | zpg,X           | ✅          | ✅     |
+| EOR         | 59     | abs,Y           | ✅          | ✅     |
+| EOR         | 5D     | abs,X           | ✅          |✅      |
+| LSR         | 4A     | impl            | ✅          |✅      |
+| LSR         | 46     | zpg             | ✅          |✅      |
+| LSR         | 4E     | abs             | ✅          |✅      |
+| LSR         | 56     | zpg,X           | ✅          |✅      |
+| LSR         | 5E     | abs,X           | ✅          |✅      |
+| PHA         | 48     | impl            | ✅          | ✅     |
+| JMP         | 4C     | abs             | ✅          | ✅     |
+| JMP         | 6C     | ind             | ✅          | ✅     |
+| BVC         | 50     | rel             | ✅          |      |
+| CLI         | 58     | impl            | ✅          |      |
+| RTS         | 60     | impl            | ✅          |      |
+| ADC         | 61     | X,ind           | ✅          | ✅      |
+| ADC         | 65     | zpg             | ✅          | ✅  |
+| ADC         | 69     | #               | ✅          | ✅  |
+| ADC         | 6D     | abs             | ✅          | ✅     |
+| ADC         | 71     | ind,Y           | ✅          | ✅     |
+| ADC         | 75     | zpg,X           | ✅          | ✅    |
+| ADC         | 79     | abs,Y           | ✅          | ✅     |
+| ADC         | 7D     | abs,X           | ✅          | ✅     |
 | ROR         | 6A     | impl            | ✅          |        |
 | ROR         | 66     | zpg             | ✅          |        |
 | ROR         | 6E     | abs             | ✅          |        |
