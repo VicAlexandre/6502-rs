@@ -18,9 +18,9 @@ This emulator aims to accurately simulate the operation of the 6502 microprocess
 
 ## Roadmap
 
-- **Instructions**: Implemented. The core instruction set of the 6502 is under development, with the aim to cover all official opcodes and behaviors.
+- **Instructions**: The core instruction set of the 6502 is currently implemented.
 
-- **TUI (Text-based User Interface)**: Implemented. A real-time interface that will display and update the current status of the processor with each execution step. This will enhance the usability for educational purposes and debugging.
+- **TUI (Text-based User Interface)**: Implemented. A real-time interface that displays and update the current status of the processor with each execution step. This enhances the usability for educational purposes and debugging.
 
 - **Testing**: Currently in progress.
 
