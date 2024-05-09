@@ -1,5 +1,3 @@
-use std::fmt;
-
 use crate::{
     addressing_mode::{get_addr_mode, AddrMode},
     memory::Memory,
@@ -11,77 +9,29 @@ const MASK_MSB: u8 = 0b10000000;
 const MASK_SIXTH_BIT: u8 = 0b01000000;
 const MASK_LSB: u8 = 0b00000001;
 
-pub struct CpuState {
-    pub a: u8,
-    pub x: u8,
-    pub y: u8,
-    pub sp: u8,
-    pub pc: u16,
-    pub negative: bool,
-    pub overflow: bool,
-    pub brk: bool,
-    pub decimal: bool,
-    pub interrupt_disable: bool,
-    pub zero: bool,
-    pub carry: bool,
-    pub cycles: u32,
-    pub next_instruction: u8,
-}
-
-impl CpuState {
-    pub fn new(cpu: &Cpu) -> CpuState {
-        CpuState {
-            a: cpu.a,
-            x: cpu.x,
-            y: cpu.y,
-            pc: cpu.pc,
-            sp: cpu.stack.get_sp(),
-            negative: cpu.sr.get_negative(),
-            overflow: cpu.sr.get_overflow(),
-            brk: cpu.sr.get_brk(),
-            decimal: cpu.sr.get_decimal(),
-            interrupt_disable: cpu.sr.get_interrupt_disable(),
-            zero: cpu.sr.get_zero(),
-            carry: cpu.sr.get_carry(),
-            cycles: 0,
-            next_instruction: cpu.memory.read_byte(cpu.pc),
-        }
-    }
-}
-
-impl fmt::Display for CpuState {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "######## REGISTER BANK ########\n
-A: 0x{:02X} | X: 0x{:02X} | Y: 0x{:02X} | PC: 0x{:04X} | SP: 0x{:02X}\n
-######## STATUS REGISTER FLAGS ########\n
-N: {} || O: {} || B: {} || D: {} || I: {} || Z: {} || C: {}\n
-Cycles used: {}\n",
-            self.a,
-            self.x,
-            self.y,
-            self.pc,
-            self.sp,
-            self.negative as u8,
-            self.overflow as u8,
-            self.brk as u8,
-            self.decimal as u8,
-            self.interrupt_disable as u8,
-            self.zero as u8,
-            self.carry as u8,
-            self.cycles,
-        )
-    }
-}
-
+/// Represents the current CPU state
 pub struct Cpu {
+    /// Accumulator register - 8 bits
     pub a: u8,
+    /// X register - 8 bits
     pub x: u8,
+    /// Y register - 8 bits
     pub y: u8,
+    /// Program counter - 16 bits
     pub pc: u16,
+    /// Memory - 64KB
     pub memory: Memory,
+    /// Stack - 256 bytes
     pub stack: Stack,
+    /// Status register - 8 bits
+    /// * Bit 0: Carry
+    /// * Bit 1: Zero
+    /// * Bit 2: Interrupt Disable
+    /// * Bit 3: Decimal
+    /// * Bit 4: Break
+    /// * Bit 5: Unused
+    /// * Bit 6: Overflow
+    /// * Bit 7: Negative
     pub sr: StatusRegister,
 }
 

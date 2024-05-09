@@ -13,16 +13,16 @@ pub struct Instruction {
 impl Instruction {
     pub fn new(cpu: &Cpu) -> Instruction {
         let next_instruction = cpu.memory.read_byte(cpu.pc);
-        let name_and_desc = instruction_name_and_description(next_instruction);
-        let addr_mode = addr_mode_str(get_addr_mode(next_instruction));
-        let assembly = disassemble(cpu, name_and_desc.0, &addr_mode);
+        let name_and_desc = instr_get_name_and_description(next_instruction);
+        let addr_mode = instr_addr_mode_str(get_addr_mode(next_instruction));
+        let assembly = instr_disassemble(cpu, name_and_desc.0, &addr_mode);
 
         Instruction {
             name: name_and_desc.0,
             description: name_and_desc.1,
             opcode: next_instruction,
             addr_mode: addr_mode,
-            assembly: assembly
+            assembly: assembly,
         }
     }
 }
@@ -37,7 +37,14 @@ impl fmt::Display for Instruction {
     }
 }
 
-fn instruction_name_and_description(opcode: u8) -> (&'static str, &'static str) {
+/// Returns the name and description of the instruction based on the provided opcode
+///
+/// ### Parameters:
+/// * `opcode` - The opcode of the instruction
+///
+/// ### Returns:
+/// * A tuple containing the name and description of the instruction
+fn instr_get_name_and_description(opcode: u8) -> (&'static str, &'static str) {
     match opcode {
         0x00 => ("BRK", "Break"),
         0x18 => ("CLC", "Clear Carry"),
@@ -99,7 +106,14 @@ fn instruction_name_and_description(opcode: u8) -> (&'static str, &'static str) 
     }
 }
 
-fn addr_mode_str(addr_mode: AddrMode) -> String {
+/// Returns the string representation of the addressing mode
+///
+/// ### Parameters:
+/// * `addr_mode` - The addressing mode
+///
+/// ### Returns:
+/// * A string representation of the addressing mode
+fn instr_addr_mode_str(addr_mode: AddrMode) -> String {
     match addr_mode {
         AddrMode::Abs => "Abs",
         AddrMode::AbsX => "Abs, X",
@@ -118,7 +132,16 @@ fn addr_mode_str(addr_mode: AddrMode) -> String {
     .to_string()
 }
 
-fn disassemble(cpu: &Cpu, operation_name: &str, addr_mode: &String) -> String {
+/// Returns the disassembled instruction as a string
+///
+/// ### Parameters:
+/// * `cpu` - The CPU state
+/// * `operation_name` - The name of the operation
+/// * `addr_mode` - The addressing mode
+///
+/// ### Returns:
+/// * A string containing the disassembled instruction
+fn instr_disassemble(cpu: &Cpu, operation_name: &str, addr_mode: &String) -> String {
     let assembly = String::from(operation_name);
 
     match addr_mode.as_str() {

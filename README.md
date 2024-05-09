@@ -31,31 +31,31 @@ We welcome contributions from fellow students and enthusiasts. Please feel free 
 ## Implemented Instructions
 | Instruction | Opcode | Addressing Mode | Implemented | Tested |
 |-------------|--------|-----------------|-------------|--------|
-| BRK         | 00     | impl            | ✅          |        |
-| ORA         | 01     | X,ind           | ✅          |        |
-| ORA         | 05     | zpg             | ✅          |        |
-| ORA         | 09     | #               | ✅          |        |
-| ORA         | 0D     | abs             | ✅          |        |
-| ORA         | 15     | zpg,X           | ✅          |        |
-| ORA         | 19     | abs,Y           | ✅          |        |
-| ORA         | 1D     | abs,X           | ✅          |        |
-| ASL         | 0A     | impl            | ✅          |        |
-| ASL         | 06     | zpg             | ✅          |        |
-| ASL         | 0E     | abs             | ✅          |        |
-| ASL         | 16     | zpg,X           | ✅          |        |
-| ASL         | 1E     | abs,X           | ✅          |        |
-| PHP         | 08     | impl            | ✅          |        |
-| BPL         | 10     | rel             | ✅          |        |
-| CLC         | 18     | impl            | ✅          |        |
-| JSR         | 20     | abs             | ✅          |        |
-| AND         | 21     | X,ind           | ✅          |        |
-| AND         | 25     | zpg             | ✅          |        |
-| AND         | 29     | #               | ✅          |        |
-| AND         | 2D     | abs             | ✅          |        |
-| AND         | 31     | ind,Y           | ✅          |        |
-| AND         | 35     | zpg,X           | ✅          |        |
-| AND         | 39     | abs,Y           | ✅          |        |
-| AND         | 3D     | abs,X           | ✅          |        |
+| BRK         | 00     | impl            | ✅          |  ✅      |
+| ORA         | 01     | X,ind           | ✅          |   ✅     |
+| ORA         | 05     | zpg             | ✅          |  ✅      |
+| ORA         | 09     | #               | ✅          |  ✅       |
+| ORA         | 0D     | abs             | ✅          |   ✅     |
+| ORA         | 15     | zpg,X           | ✅          |   ✅     |
+| ORA         | 19     | abs,Y           | ✅          |   ✅     |
+| ORA         | 1D     | abs,X           | ✅          |   ✅     |
+| ASL         | 0A     | impl            | ✅          |   ✅     |
+| ASL         | 06     | zpg             | ✅          |   ✅     |
+| ASL         | 0E     | abs             | ✅          |     ✅   |
+| ASL         | 16     | zpg,X           | ✅          |       ✅ |
+| ASL         | 1E     | abs,X           | ✅          |  ✅      |
+| PHP         | 08     | impl            | ✅          |   ✅     |
+| BPL         | 10     | rel             | ✅          |   ✅     |
+| CLC         | 18     | impl            | ✅          |   ✅     |
+| JSR         | 20     | abs             | ✅          |   ✅     |
+| AND         | 21     | X,ind           | ✅          | ✅        |
+| AND         | 25     | zpg             | ✅          | ✅        |
+| AND         | 29     | #               | ✅          | ✅        |
+| AND         | 2D     | abs             | ✅          | ✅        |
+| AND         | 31     | ind,Y           | ✅          | ✅        |
+| AND         | 35     | zpg,X           | ✅          | ✅        |
+| AND         | 39     | abs,Y           | ✅          | ✅        |
+| AND         | 3D     | abs,X           | ✅          | ✅        |
 | BIT         | 24     | zpg             | ✅          |        |
 | BIT         | 2C     | abs             | ✅          |        |
 | ROL         | 2A     | impl            | ✅          |        |
@@ -65,7 +65,7 @@ We welcome contributions from fellow students and enthusiasts. Please feel free 
 | ROL         | 3E     | abs,X           | ✅          |        |
 | PLP         | 28     | impl            | ✅          |        |
 | BMI         | 30     | rel             | ✅          |        |
-| SEC         | 38     | impl            | ✅          |        |
+| SEC         | 38     | impl            | ✅          |  ✅      |
 | RTI         | 40     | impl            | ✅          |        |
 | EOR         | 41     | X,ind           | ✅          |        |
 | EOR         | 45     | zpg             | ✅          |        |
@@ -126,7 +126,7 @@ We welcome contributions from fellow students and enthusiasts. Please feel free 
 | LDY         | BC     | abs,X           | ✅          |        |
 | LDA         | A1     | X,ind           | ✅          |        |
 | LDA         | A5     | zpg             | ✅          |        |
-| LDA         | A9     | #               | ✅          |        |
+| LDA         | A9     | #               | ✅          | ✅        |
 | LDA         | AD     | abs             | ✅          |        |
 | LDA         | B1     | ind,Y           | ✅          |        |
 | LDA         | B5     | zpg,X           | ✅          |        |
@@ -157,7 +157,7 @@ We welcome contributions from fellow students and enthusiasts. Please feel free 
 | DEC         | DE     | abs,X           | ✅          |        |
 | INY         | C8     | impl            | ✅          |        |
 | DEX         | CA     | impl            | ✅          |        |
-| BNE         | D0     | rel             | ✅          |        |
+| BNE         | D0     | rel             | ✅          |   ✅     |
 | CLD         | D8     | impl            | ✅          |        |
 | CPX         | E0     | #               | ✅          |        |
 | CPX         | E4     | zpg             | ✅          |        |

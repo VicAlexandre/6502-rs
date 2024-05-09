@@ -10,7 +10,8 @@ use ratatui::{
     widgets::{block::*, *},
 };
 
-use crate::cpu::{Cpu, CpuState};
+use crate::cpu::Cpu;
+use crate::cpu_state::CpuState;
 use crate::instruction::Instruction;
 
 /// A type alias for the terminal type used in this application
@@ -255,13 +256,20 @@ impl App {
                     return Row::new(vec![Cell::from("")]);
                 }
 
-                let mut cells = vec![Cell::from(format!("0x{:03X}_", (16 * i + self.memory_index) >> 4))];
+                let mut cells = vec![Cell::from(format!(
+                    "0x{:03X}_",
+                    (16 * i + self.memory_index) >> 4
+                ))];
                 for j in 0..16 {
                     let index = i * 16 + j;
                     let value = format!("0x{:02X}", self.memory.as_ref().unwrap()[index]);
 
                     let cell = if index + self.memory_index == self.cpu.pc as usize {
-                        Cell::from(value).style(Style::default().bg(Color::Rgb(0, 255, 0)).fg(Color::Rgb(0, 0, 0)))
+                        Cell::from(value).style(
+                            Style::default()
+                                .bg(Color::Rgb(0, 255, 0))
+                                .fg(Color::Rgb(0, 0, 0)),
+                        )
                     } else {
                         Cell::from(value)
                     };
@@ -289,7 +297,11 @@ impl App {
                     let value = format!("0x{:02X}", self.stack.as_ref().unwrap()[index]);
 
                     let cell = if index == self.cpu.stack.sp as usize {
-                        Cell::from(value).style(Style::default().bg(Color::Rgb(0, 255, 0)).fg(Color::Rgb(0, 0, 0)))
+                        Cell::from(value).style(
+                            Style::default()
+                                .bg(Color::Rgb(0, 255, 0))
+                                .fg(Color::Rgb(0, 0, 0)),
+                        )
                     } else {
                         Cell::from(value)
                     };
@@ -337,8 +349,7 @@ impl App {
     fn scroll_down_memory(&mut self) {
         if self.memory_index + 40 * 16 >= 0x10000 {
             self.memory_index = 0;
-        }
-        else {
+        } else {
             self.memory_index = self.memory_index + 40 * 16
         }
 
@@ -349,12 +360,10 @@ impl App {
         if self.memory_index as i32 - 40 * 16 < 0 {
             if self.memory_index == 0 {
                 self.memory_index = 0x10000 - 40 * 16;
-            }
-            else {
+            } else {
                 self.memory_index = 0;
             }
-        }
-        else {
+        } else {
             self.memory_index = self.memory_index - 40 * 16;
         }
 
