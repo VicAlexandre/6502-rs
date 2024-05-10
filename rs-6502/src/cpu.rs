@@ -221,12 +221,12 @@ impl Cpu {
     }
 
     fn break_interrupt(&mut self) -> u8 {
-        self.stack.push_word(self.pc + 2);
+        self.sr.brk = true;
+
+        self.stack.push_word(self.pc + 1);
         self.stack.push_byte(self.sr.get_status_byte());
 
         self.pc = self.memory.read_word(0xFFFE);
-
-        self.sr.brk = true;
 
         7
     }
@@ -986,6 +986,7 @@ impl Cpu {
 
     fn rti(&mut self) -> u8 {
         self.sr.set_status_byte(self.stack.pop_byte());
+        self.sr.brk = false;
         self.pc = self.stack.pop_word();
 
         6

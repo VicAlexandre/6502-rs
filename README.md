@@ -66,7 +66,7 @@ We welcome contributions from fellow students and enthusiasts. Please feel free 
 | PLP         | 28     | impl            | ✅          | ✅     |
 | BMI         | 30     | rel             | ✅          | ✅     |
 | SEC         | 38     | impl            | ✅          |  ✅    |
-| RTI         | 40     | impl            | ✅          |        |
+| RTI         | 40     | impl            | ✅          | ✅     |
 | EOR         | 41     | X,ind           | ✅          | ✅     |
 | EOR         | 45     | zpg             | ✅          | ✅     |
 | EOR         | 49     | #               | ✅          | ✅     |

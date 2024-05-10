@@ -23,16 +23,16 @@ impl Stack {
     }
 
     pub fn push_word(&mut self, data: u16) {
-        self.stack[self.sp as usize] = data as u8;
-        self.stack[(self.sp - 1) as usize] = (data >> 8) as u8;
+        self.stack[self.sp as usize] = (data >> 8) as u8;
+        self.stack[(self.sp - 1) as usize] = data as u8;
         self.sp -= 2;
     }
 
     pub fn pop_word(&mut self) -> u16 {
         let word: u16;
 
-        word = ((self.stack[self.sp as usize] as u16) << 8)
-            | (self.stack[(self.sp + 1) as usize]) as u16;
+        word = ((self.stack[(self.sp + 1) as usize] as u16)) | ((self.stack[(self.sp + 2) as usize] as u16) << 8);
+
         self.sp += 2;
 
         word

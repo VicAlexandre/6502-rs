@@ -102,7 +102,7 @@ fn instr_get_name_and_description(opcode: u8) -> (&'static str, &'static str) {
         0x38 => ("SEC", "Set Carry"),
         0xF8 => ("SED", "Set Decimal"),
         0x78 => ("SEI", "Set Interrupt"),
-        _ => panic!("Instruction not implemented: {:#04X}", opcode),
+        _ => panic!("Instruction not implemented: {:#02X}", opcode),
     }
 }
 
