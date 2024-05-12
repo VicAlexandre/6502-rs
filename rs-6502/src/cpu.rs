@@ -951,7 +951,7 @@ impl Cpu {
     }
 
     fn jsr(&mut self) -> u8 {
-        self.stack.push_word(self.pc + 0x02);
+        self.stack.push_word(self.pc + 0x01);
         self.pc = self.fetch_word();
 
         3
@@ -1301,13 +1301,13 @@ impl Cpu {
     fn sbc(&mut self, addr_mode: AddrMode) -> u8 {
         let cycles: u8;
         let data_addr: u16;
-        let mut data: u8;
         let result: u16;
+        let mut data: u8;
 
         match addr_mode {
             AddrMode::Immediate => {
-                self.pc += 1;
                 data_addr = self.pc;
+                self.pc += 1;
                 cycles = 2;
             }
             AddrMode::ZeroPage => {
@@ -1352,15 +1352,17 @@ impl Cpu {
             self.a = hex_as_dec(self.a);
         }
 
-        result = (self.a as u16)
-            .wrapping_sub(data as u16)
-            .wrapping_sub(!(self.sr.carry as u16));
+        println!("a: {} data: {}", self.a, data);
 
-        self.sr.carry = (result & 0x0100) == 0;
-        self.sr.overflow = !self.sr.carry;
+        result = self.a.wrapping_sub(data) as u16;
+
+        println!("{}", result);
+
+        self.sr.carry = result < 0x100;
+        self.sr.overflow = ((self.a | result as u8) & (data | result as u8) & 0x80) != 0;
         self.set_zero_and_negative_flags(result as u8);
 
-        self.memory.write_byte(data_addr, dec_as_hex(result as u8));
+        self.a = result as u8;
 
         cycles
     }
