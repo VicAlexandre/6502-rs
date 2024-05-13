@@ -3,6 +3,7 @@ use std::{env, io};
 
 mod addressing_mode;
 mod cpu;
+mod cpu_state;
 mod instruction;
 mod memory;
 mod stack;

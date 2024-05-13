@@ -1,5 +1,3 @@
-use std::fmt;
-
 use crate::{
     addressing_mode::{get_addr_mode, AddrMode},
     memory::Memory,
@@ -11,77 +9,29 @@ const MASK_MSB: u8 = 0b10000000;
 const MASK_SIXTH_BIT: u8 = 0b01000000;
 const MASK_LSB: u8 = 0b00000001;
 
-pub struct CpuState {
-    pub a: u8,
-    pub x: u8,
-    pub y: u8,
-    pub sp: u8,
-    pub pc: u16,
-    pub negative: bool,
-    pub overflow: bool,
-    pub brk: bool,
-    pub decimal: bool,
-    pub interrupt_disable: bool,
-    pub zero: bool,
-    pub carry: bool,
-    pub cycles: u32,
-    pub next_instruction: u8,
-}
-
-impl CpuState {
-    pub fn new(cpu: &Cpu) -> CpuState {
-        CpuState {
-            a: cpu.a,
-            x: cpu.x,
-            y: cpu.y,
-            pc: cpu.pc,
-            sp: cpu.stack.get_sp(),
-            negative: cpu.sr.get_negative(),
-            overflow: cpu.sr.get_overflow(),
-            brk: cpu.sr.get_brk(),
-            decimal: cpu.sr.get_decimal(),
-            interrupt_disable: cpu.sr.get_interrupt_disable(),
-            zero: cpu.sr.get_zero(),
-            carry: cpu.sr.get_carry(),
-            cycles: 0,
-            next_instruction: cpu.memory.read_byte(cpu.pc),
-        }
-    }
-}
-
-impl fmt::Display for CpuState {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(
-            f,
-            "######## REGISTER BANK ########\n
-A: 0x{:02X} | X: 0x{:02X} | Y: 0x{:02X} | PC: 0x{:04X} | SP: 0x{:02X}\n
-######## STATUS REGISTER FLAGS ########\n
-N: {} || O: {} || B: {} || D: {} || I: {} || Z: {} || C: {}\n
-Cycles used: {}\n",
-            self.a,
-            self.x,
-            self.y,
-            self.pc,
-            self.sp,
-            self.negative as u8,
-            self.overflow as u8,
-            self.brk as u8,
-            self.decimal as u8,
-            self.interrupt_disable as u8,
-            self.zero as u8,
-            self.carry as u8,
-            self.cycles,
-        )
-    }
-}
-
+/// Represents the current CPU state
 pub struct Cpu {
+    /// Accumulator register - 8 bits
     pub a: u8,
+    /// X register - 8 bits
     pub x: u8,
+    /// Y register - 8 bits
     pub y: u8,
+    /// Program counter - 16 bits
     pub pc: u16,
+    /// Memory - 64KB
     pub memory: Memory,
+    /// Stack - 256 bytes
     pub stack: Stack,
+    /// Status register - 8 bits
+    /// * Bit 0: Carry
+    /// * Bit 1: Zero
+    /// * Bit 2: Interrupt Disable
+    /// * Bit 3: Decimal
+    /// * Bit 4: Break
+    /// * Bit 5: Unused
+    /// * Bit 6: Overflow
+    /// * Bit 7: Negative
     pub sr: StatusRegister,
 }
 
@@ -271,12 +221,12 @@ impl Cpu {
     }
 
     fn break_interrupt(&mut self) -> u8 {
-        self.stack.push_word(self.pc + 2);
+        self.sr.brk = true;
+
+        self.stack.push_word(self.pc + 1);
         self.stack.push_byte(self.sr.get_status_byte());
 
         self.pc = self.memory.read_word(0xFFFE);
-
-        self.sr.brk = true;
 
         7
     }
@@ -880,6 +830,7 @@ impl Cpu {
 
     fn adc(&mut self, addr_mode: AddrMode) -> u8 {
         let mut data: u8;
+        let mut temp_result: u8;
         let cycles: u8;
 
         match addr_mode {
@@ -934,9 +885,14 @@ impl Cpu {
             self.a = hex_as_dec(self.a);
         }
 
+        temp_result = self.a.wrapping_add(data).wrapping_add(self.sr.carry as u8);
+        if self.sr.decimal {
+            temp_result = dec_as_hex(temp_result);
+        }
+
         self.sr.carry = data as u16 + self.a as u16 + self.sr.carry as u16 > 0xFF;
         self.sr.overflow = data as u16 + self.a as u16 + self.sr.carry as u16 > 0xFF;
-        self.a = dec_as_hex(self.a.wrapping_add(data).wrapping_add(self.sr.carry as u8));
+        self.a = temp_result;
 
         cycles
     }
@@ -995,7 +951,7 @@ impl Cpu {
     }
 
     fn jsr(&mut self) -> u8 {
-        self.stack.push_word(self.pc + 0x02);
+        self.stack.push_word(self.pc + 0x01);
         self.pc = self.fetch_word();
 
         3
@@ -1030,6 +986,7 @@ impl Cpu {
 
     fn rti(&mut self) -> u8 {
         self.sr.set_status_byte(self.stack.pop_byte());
+        self.sr.brk = false;
         self.pc = self.stack.pop_word();
 
         6
@@ -1344,13 +1301,13 @@ impl Cpu {
     fn sbc(&mut self, addr_mode: AddrMode) -> u8 {
         let cycles: u8;
         let data_addr: u16;
-        let mut data: u8;
         let result: u16;
+        let mut data: u8;
 
         match addr_mode {
             AddrMode::Immediate => {
-                self.pc += 1;
                 data_addr = self.pc;
+                self.pc += 1;
                 cycles = 2;
             }
             AddrMode::ZeroPage => {
@@ -1395,15 +1352,13 @@ impl Cpu {
             self.a = hex_as_dec(self.a);
         }
 
-        result = (self.a as u16)
-            .wrapping_sub(data as u16)
-            .wrapping_sub(!(self.sr.carry as u16));
+        result = self.a.wrapping_sub(data) as u16;
 
-        self.sr.carry = (result & 0x0100) == 0;
-        self.sr.overflow = !self.sr.carry;
+        self.sr.carry = result < 0x100;
+        self.sr.overflow = ((self.a | result as u8) & (data | result as u8) & 0x80) != 0;
         self.set_zero_and_negative_flags(result as u8);
 
-        self.memory.write_byte(data_addr, dec_as_hex(result as u8));
+        self.a = result as u8;
 
         cycles
     }
@@ -1436,5 +1391,5 @@ fn dec_as_hex(value: u8) -> u8 {
 }
 
 fn is_bcd_valid(value: u8) -> bool {
-    (value & 0xF0 >= 0xA0) || (value & 0x0F >= 0x0A)
+    ((value >> 4) <= 0x09) && ((value & 0x0F) <= 0x09)
 }
