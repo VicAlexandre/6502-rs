@@ -1352,11 +1352,7 @@ impl Cpu {
             self.a = hex_as_dec(self.a);
         }
 
-        println!("a: {} data: {}", self.a, data);
-
         result = self.a.wrapping_sub(data) as u16;
-
-        println!("{}", result);
 
         self.sr.carry = result < 0x100;
         self.sr.overflow = ((self.a | result as u8) & (data | result as u8) & 0x80) != 0;
