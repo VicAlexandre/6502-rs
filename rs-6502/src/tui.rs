@@ -24,6 +24,7 @@ pub struct App {
     current_state: Option<CpuState>,
     memory: Option<Vec<u8>>,
     memory_index: usize,
+    num_memory_lines: u8,
     stack: Option<Vec<u8>>,
     prev_instruction: Option<Instruction>,
     curr_instruction: Option<Instruction>,
@@ -32,7 +33,6 @@ pub struct App {
 impl App {
     pub fn new(cpu: Cpu) -> App {
         let curr = CpuState::new(&cpu);
-        let memory = cpu.memory.get_ram(0, 40 * 16);
         let stack = cpu.stack.get_stack();
         let curr_instruction = Instruction::new(&cpu);
 
@@ -41,8 +41,9 @@ impl App {
             exit: false,
             previous_state: None,
             current_state: Some(curr),
-            memory: Some(memory),
+            memory: None,
             memory_index: 0,
+            num_memory_lines: 40,
             stack: Some(stack),
             prev_instruction: None,
             curr_instruction: Some(curr_instruction),
@@ -79,16 +80,19 @@ impl App {
         }
     }
 
-    fn render_frame(&self, frame: &mut Frame) {
+    fn render_frame(&mut self, frame: &mut Frame) {
         // The layout of the application
         let layout = Layout::default()
             .constraints([
-                Constraint::Percentage(30),
-                Constraint::Percentage(70),
+                Constraint::Length(11),
+                Constraint::Fill(1),
                 Constraint::Length(1),
             ])
             .direction(Direction::Vertical)
             .split(frame.size());
+
+        self.num_memory_lines = layout[1].height as u8 - 3;
+        self.memory = Some(self.cpu.memory.get_ram(self.memory_index, self.num_memory_lines as usize * 16));
 
         // Split the CPU and Memory layout
         let cpu_layouts = Layout::default()
@@ -97,7 +101,7 @@ impl App {
             .split(layout[0]);
 
         let mem_layouts = Layout::default()
-            .constraints([Constraint::Percentage(60), Constraint::Percentage(50)])
+            .constraints([Constraint::Percentage(50), Constraint::Percentage(50)])
             .direction(Direction::Horizontal)
             .split(layout[1]);
 
@@ -251,18 +255,18 @@ impl App {
                     .map(|_| Constraint::Percentage(100 / 17))
                     .collect::<Vec<Constraint>>(),
             )
-            .rows((0..40).map(|i| {
+            .rows((0..self.num_memory_lines as usize).map(|i| {
                 if (16 * i as u32 + self.memory_index as u32) >= 0x10000 {
                     return Row::new(vec![Cell::from("")]);
                 }
 
                 let mut cells = vec![Cell::from(format!(
-                    "0x{:03X}_",
+                    "${:03X}_",
                     (16 * i + self.memory_index) >> 4
                 ))];
                 for j in 0..16 {
                     let index = i * 16 + j;
-                    let value = format!("0x{:02X}", self.memory.as_ref().unwrap()[index]);
+                    let value = format!("${:02X}", self.memory.as_ref().unwrap()[index]);
 
                     let cell = if index + self.memory_index == self.cpu.pc as usize {
                         Cell::from(value).style(
@@ -291,10 +295,10 @@ impl App {
                     .collect::<Vec<Constraint>>(),
             )
             .rows((0..self.stack.as_ref().unwrap().len() / 16).map(|i| {
-                let mut cells = vec![Cell::from(format!("0x{:1X}_", (i * 16) >> 4))];
+                let mut cells = vec![Cell::from(format!("${:1X}_", (i * 16) >> 4))];
                 for j in 0..16 {
                     let index = i * 16 + j;
-                    let value = format!("0x{:02X}", self.stack.as_ref().unwrap()[index]);
+                    let value = format!("${:02X}", self.stack.as_ref().unwrap()[index]);
 
                     let cell = if index == self.cpu.stack.sp as usize {
                         Cell::from(value).style(
@@ -342,32 +346,32 @@ impl App {
         self.curr_instruction = Some(new_instruction);
         self.current_state = Some(new_state);
 
-        self.memory = Some(self.cpu.memory.get_ram(self.memory_index, 40 * 16));
+        self.memory = Some(self.cpu.memory.get_ram(self.memory_index, self.num_memory_lines as usize * 16));
         self.stack = Some(self.cpu.stack.get_stack());
     }
 
     fn scroll_down_memory(&mut self) {
-        if self.memory_index + 40 * 16 >= 0x10000 {
+        if self.memory_index + self.num_memory_lines as usize * 16 >= 0x10000 {
             self.memory_index = 0;
         } else {
-            self.memory_index = self.memory_index + 40 * 16
+            self.memory_index = self.memory_index + self.num_memory_lines as usize * 16
         }
 
-        self.memory = Some(self.cpu.memory.get_ram(self.memory_index, 40 * 16));
+        self.memory = Some(self.cpu.memory.get_ram(self.memory_index, self.num_memory_lines as usize * 16));
     }
 
     fn scroll_up_memory(&mut self) {
-        if self.memory_index as i32 - 40 * 16 < 0 {
+        if self.memory_index as i32 - self.num_memory_lines as i32 * 16 < 0 {
             if self.memory_index == 0 {
-                self.memory_index = 0x10000 - 40 * 16;
+                self.memory_index = 0x10000 - self.num_memory_lines as usize * 16;
             } else {
                 self.memory_index = 0;
             }
         } else {
-            self.memory_index = self.memory_index - 40 * 16;
+            self.memory_index = self.memory_index - self.num_memory_lines as usize * 16;
         }
 
-        self.memory = Some(self.cpu.memory.get_ram(self.memory_index, 40 * 16));
+        self.memory = Some(self.cpu.memory.get_ram(self.memory_index, self.num_memory_lines as usize * 16));
     }
 }
 
